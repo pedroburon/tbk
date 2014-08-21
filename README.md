@@ -1,4 +1,4 @@
 tbk
 ===
 
-Pythonm implementation of Transbank's Webpay protocol
+Python implementation of Transbank's Webpay protocol
