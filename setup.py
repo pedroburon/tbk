@@ -31,6 +31,7 @@ setup(
     ],
     install_requires=[
         'requests>=2.3.0',
+        'six>=1.7.3'
     ],
     tests_require=[
         'mock>=1.0.1',

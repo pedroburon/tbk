@@ -1,8 +1,9 @@
 import sys
 import re
 import random
-import urlparse
 import hashlib
+
+import six.moves.urllib.parse as urlparse
 
 import requests
 
@@ -124,7 +125,7 @@ class Payment(object):
             h.update(str(self.commerce.id))
             h.update("webpay")
             mac = str(h.hexdigest())
-            
+
             params += ["TBK_MAC=%s" % mac]
 
         params += ["TBK_MONTO=%d" % int(self.amount * 100)]
