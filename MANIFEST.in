@@ -4,4 +4,5 @@ include README.md
 include tests/raw_params.txt
 include tests/raw_params_sharp_no_pseudomac.txt
 include tests/raw_params_ampersand_no_pseudomac.txt
+include tests/raw_params_sharp_no_pseudomac_no_session.txt
 recursive-include tbk/webpay/keys *

@@ -361,6 +361,23 @@ class PaymentTest(TestCase):
             result = payment.raw_params(splitter="&", include_pseudomac=False)
             self.assertEqual(raw_params, result)
 
+    @mock.patch('tbk.webpay.payment.Payment.transaction_id')
+    def test_raw_params_ampersand_no_pseudomac_no_session_id(self, transaction_id):
+        """
+        payment.raw_params returns params as seen on raw_params_sharp_no_pseudomac_no_session.txt
+        """
+        transaction_id.return_value = 123456789
+        commerce = self.payment_kwargs['commerce']
+        commerce.id = "1234567890"
+        commerce.webpay_key_id = '101'
+        self.payment_kwargs['session_id'] = None
+        payment = Payment(**self.payment_kwargs)
+        raw_params_file_path = os.path.join(os.path.dirname(__file__), 'raw_params_sharp_no_pseudomac_no_session.txt')
+        with open(raw_params_file_path, 'r') as raw_params_file:
+            raw_params = raw_params_file.read()
+            result = payment.raw_params(include_pseudomac=False)
+            self.assertEqual(raw_params, result)
+
     @mock.patch('tbk.webpay.payment.random')
     def test_transaction_id(self, random):
         """
