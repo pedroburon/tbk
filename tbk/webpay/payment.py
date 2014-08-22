@@ -94,10 +94,10 @@ class Payment(object):
         return self._params
 
     def verify(self):
-        pass
+        pass  # pragma: no cover
 
     def raw_params(self):
-        pass
+        pass  # pragma: no cover
 
 
 class PaymentError(Exception):
