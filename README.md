@@ -1,6 +1,8 @@
 tbk
 ===
 
+[![Build Status](https://travis-ci.org/pedroburon/tbk.svg)](https://travis-ci.org/pedroburon/tbk)
+
 Python implementation of Transbank's Webpay protocol. A port from ruby implementation http://github.com/sagmor/tbk.
 
 Currently trying to made this happen:
