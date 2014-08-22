@@ -2,6 +2,7 @@ tbk
 ===
 
 [![Build Status](https://travis-ci.org/pedroburon/tbk.svg)](https://travis-ci.org/pedroburon/tbk)
+[![Coverage Status](https://img.shields.io/coveralls/pedroburon/tbk.svg)](https://coveralls.io/r/pedroburon/tbk)
 
 Python implementation of Transbank's Webpay protocol. A port from ruby implementation http://github.com/sagmor/tbk.
 
