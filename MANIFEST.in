@@ -1,5 +1,7 @@
 include AUTHORS
 include LICENSE
 include README.md
-
+include tests/raw_params.txt
+include tests/raw_params_sharp_no_pseudomac.txt
+include tests/raw_params_ampersand_no_pseudomac.txt
 recursive-include tbk/webpay/keys *

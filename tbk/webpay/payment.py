@@ -1,5 +1,8 @@
 import sys
 import re
+import random
+import urlparse
+import hashlib
 
 import requests
 
@@ -22,6 +25,7 @@ TOKEN_REGEXP = re.compile(r'.*(TOKEN=)([a-zA-Z0-9]+).*')
 class Payment(object):
     _token = None
     _params = None
+    _transaction_id = None
 
     def __init__(self, request_ip, amount,
                  order_id, success_url, confirmation_url,
@@ -96,8 +100,40 @@ class Payment(object):
     def verify(self):
         pass  # pragma: no cover
 
-    def raw_params(self):
-        pass  # pragma: no cover
+    def transaction_id(self):
+        if not self._transaction_id:
+            self._transaction_id = random.randint(0, 10000000000 - 1)
+        return self._transaction_id
+
+    def raw_params(self, splitter="#", include_pseudomac=True):
+        params = []
+        params += ["TBK_ORDEN_COMPRA=%d" % self.order_id]
+        params += ["TBK_CODIGO_COMERCIO=%s" % self.commerce.id]
+        params += ["TBK_ID_TRANSACCION=%s" % self.transaction_id()]
+        uri = urlparse.urlparse(self.confirmation_url)
+        params += ["TBK_URL_CGI_COMERCIO=%s" % uri.path]
+        params += ["TBK_SERVIDOR_COMERCIO=%s" % uri.hostname]
+        params += ["TBK_PUERTO_COMERCIO=%s" % uri.port]
+        params += ["TBK_VERSION_KCC=%s" % TBK_VERSION_KCC]
+        params += ["TBK_KEY_ID=%s" % self.commerce.webpay_key_id]
+        params += ["PARAMVERIFCOM=1"]
+
+        if include_pseudomac:
+            h = hashlib.new('md5')
+            h.update(self.raw_params('&', False))
+            h.update(str(self.commerce.id))
+            h.update("webpay")
+            mac = str(h.hexdigest())
+            
+            params += ["TBK_MAC=%s" % mac]
+
+        params += ["TBK_MONTO=%d" % int(self.amount * 100)]
+        if self.session_id:
+            params += ["TBK_ID_SESION=%s" % self.session_id]
+        params += ["TBK_URL_EXITO=%s" % self.success_url]
+        params += ["TBK_URL_FRACASO=%s" % self.failure_url]
+        params += ["TBK_TIPO_TRANSACCION=TR_NORMAL"]
+        return splitter.join(params)
 
 
 class PaymentError(Exception):

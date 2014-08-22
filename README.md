@@ -21,3 +21,19 @@ Currently trying to made this happen:
     payment.redirect_url()
 
 More info at http://github.com/sagmor/tbk
+
+Install for development
+-----------------------
+
+After cloning the repo:
+
+    python setup.py develop
+
+For testing purposes:
+
+    python setup.py test
+
+Recommended:
+
+    pip install nosy
+    nosy
