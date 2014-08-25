@@ -6,7 +6,7 @@ tbk
 
 Python implementation of Transbank's Webpay protocol. A port from ruby implementation http://github.com/sagmor/tbk.
 
-Currently trying to made this happen:
+Currently trying to make this happen:
 
     payment = Payment(
         request_ip='123.123.123.123',
