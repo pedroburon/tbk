@@ -156,11 +156,11 @@ class PaymentTest(TestCase):
         self.assertFalse(logger.payment.called)
 
     @mock.patch('tbk.webpay.payment.requests')
-    @mock.patch('tbk.webpay.payment.Payment.process_url')
+    @mock.patch('tbk.webpay.payment.Payment.validation_url')
     @mock.patch('tbk.webpay.payment.Payment.params')
-    def test_fetch_token(self, params, process_url, requests):
+    def test_fetch_token(self, params, validation_url, requests):
         """
-        payment.fetch_token must post data to process_url and get token from response
+        payment.fetch_token must post data to validation_url and get token from response
         """
         python_version = "%d.%d" % (sys.version_info.major, sys.version_info.minor)
         user_agent = "TBK/%(TBK_VERSION_KCC)s (Python/%(PYTHON_VERSION)s)" % {
@@ -177,7 +177,7 @@ class PaymentTest(TestCase):
         token = payment.fetch_token()
 
         requests.post.assert_called_once_with(
-            process_url.return_value,
+            validation_url.return_value,
             data={
                 'TBK_VERSION_KCC': TBK_VERSION_KCC,
                 'TBK_CODIGO_COMERCIO': commerce.id,
@@ -193,11 +193,11 @@ class PaymentTest(TestCase):
         self.assertEqual(token, 'aA123')
 
     @mock.patch('tbk.webpay.payment.requests')
-    @mock.patch('tbk.webpay.payment.Payment.process_url')
+    @mock.patch('tbk.webpay.payment.Payment.validation_url')
     @mock.patch('tbk.webpay.payment.Payment.params')
-    def test_fetch_token_not_ok(self, params, process_url, requests):
+    def test_fetch_token_not_ok(self, params, validation_url, requests):
         """
-        payment.fetch_token must post data to process_url and fail when status_code is not 200
+        payment.fetch_token must post data to validation_url and fail when status_code is not 200
         """
         payment = Payment(**self.payment_kwargs)
         response = requests.post.return_value
@@ -209,11 +209,11 @@ class PaymentTest(TestCase):
         )
 
     @mock.patch('tbk.webpay.payment.requests')
-    @mock.patch('tbk.webpay.payment.Payment.process_url')
+    @mock.patch('tbk.webpay.payment.Payment.validation_url')
     @mock.patch('tbk.webpay.payment.Payment.params')
-    def test_fetch_token_with_error(self, params, process_url, requests):
+    def test_fetch_token_with_error(self, params, validation_url, requests):
         """
-        payment.fetch_token must post data to process_url and fail with ERROR code
+        payment.fetch_token must post data to validation_url and fail with ERROR code
         """
         payment = Payment(**self.payment_kwargs)
         response = requests.post.return_value

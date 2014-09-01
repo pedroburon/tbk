@@ -57,7 +57,7 @@ class Payment(object):
 
     def fetch_token(self):
         response = requests.post(
-            self.process_url(),
+            self.validation_url(),
             data={
                 'TBK_VERSION_KCC': TBK_VERSION_KCC,
                 'TBK_CODIGO_COMERCIO': self.commerce.id,
