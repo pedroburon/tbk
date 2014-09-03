@@ -100,6 +100,7 @@ class Payment(object):
 
     def verify(self):
         pass  # pragma: no cover
+        # TODO
 
     def transaction_id(self):
         if not self._transaction_id:

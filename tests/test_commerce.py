@@ -1,6 +1,8 @@
+import os
 from unittest import TestCase
 
 import mock
+from Crypto.PublicKey import RSA
 
 from tbk.webpay import Commerce
 
@@ -15,6 +17,7 @@ class CommerceTest(TestCase):
         self.assertEqual(commerce.id, "12345")
         self.assertEqual(commerce.key, Commerce.TEST_COMMERCE_KEY)
         self.assertTrue(commerce.testing)
+        self.assertEqual("101", commerce.webpay_key_id)
 
     def test_no_id_given(self):
         """
@@ -70,7 +73,50 @@ class CommerceTest(TestCase):
         result = commerce.webpay_decrypt("encrypted")
         self.assertIsInstance(result, dict)
 
-    def test_webpay_encrypt(self):
+    @mock.patch('tbk.webpay.commerce.Commerce.get_commerce_key')
+    @mock.patch('tbk.webpay.commerce.Commerce.get_webpay_key')
+    @mock.patch('tbk.webpay.commerce.Encryption')
+    def test_webpay_encrypt(self, Encryption, get_webpay_key, get_commerce_key):
         commerce = Commerce.create_commerce()
+        message = "decrypted"
 
-        commerce.webpay_encrypt("decrypted")
+        result = commerce.webpay_encrypt(message)
+
+        Encryption.assert_called_once_with(get_commerce_key.return_value,
+                                           get_webpay_key.return_value)
+        encryption = Encryption.return_value
+        encryption.encrypt.assert_called_once_with(message)
+        get_webpay_key.assert_called_once_with()
+        get_commerce_key.assert_called_once_with()
+        self.assertEqual(result, encryption.encrypt.return_value)
+
+    def test_get_commerce_key(self):
+        testing_path = os.path.join(os.path.dirname(__file__), 'keys', 'test_commerce.pem')
+        with open(testing_path, 'r') as testing_file:
+            commerce = Commerce.create_commerce()
+            commerce.key = Commerce.TEST_COMMERCE_KEY
+
+            expected_key = RSA.importKey(testing_file.read())
+            self.assertEqual(expected_key, commerce.get_commerce_key())
+
+    def test_get_webpay_key_testing(self):
+        webpay_testing_path = os.path.join(os.path.dirname(__file__), 'keys', 'webpay_test.101.pem')
+        with open(webpay_testing_path, 'r') as testing_file:
+            commerce = Commerce.create_commerce()
+            commerce.testing = True
+
+            expected_key = RSA.importKey(testing_file.read())
+            key = commerce.get_webpay_key()
+
+            self.assertEqual(expected_key, key)
+
+    def test_get_webpay_key(self):
+        webpay_path = os.path.join(os.path.dirname(__file__), 'keys', 'webpay.101.pem')
+        with open(webpay_path, 'r') as testing_file:
+            commerce = Commerce.create_commerce()
+            commerce.testing = False
+
+            expected_key = RSA.importKey(testing_file.read())
+            key = commerce.get_webpay_key()
+
+            self.assertEqual(expected_key, key)

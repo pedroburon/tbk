@@ -317,7 +317,7 @@ class PaymentTest(TestCase):
         commerce.id = "1234567890"
         commerce.webpay_key_id = '101'
         payment = Payment(**self.payment_kwargs)
-        raw_params_file_path = os.path.join(os.path.dirname(__file__), 'raw_params.txt')
+        raw_params_file_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'raw_params.txt')
         with open(raw_params_file_path, 'r') as raw_params_file:
             raw_params = raw_params_file.read()
 
@@ -339,7 +339,7 @@ class PaymentTest(TestCase):
         commerce.id = "1234567890"
         commerce.webpay_key_id = '101'
         payment = Payment(**self.payment_kwargs)
-        raw_params_file_path = os.path.join(os.path.dirname(__file__), 'raw_params_sharp_no_pseudomac.txt')
+        raw_params_file_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'raw_params_sharp_no_pseudomac.txt')
         with open(raw_params_file_path, 'r') as raw_params_file:
             raw_params = raw_params_file.read()
             result = payment.raw_params(include_pseudomac=False)
@@ -355,7 +355,8 @@ class PaymentTest(TestCase):
         commerce.id = "1234567890"
         commerce.webpay_key_id = '101'
         payment = Payment(**self.payment_kwargs)
-        raw_params_file_path = os.path.join(os.path.dirname(__file__), 'raw_params_ampersand_no_pseudomac.txt')
+        raw_params_file_path = os.path.join(
+            os.path.dirname(__file__), 'fixtures', 'raw_params_ampersand_no_pseudomac.txt')
         with open(raw_params_file_path, 'r') as raw_params_file:
             raw_params = raw_params_file.read()
             result = payment.raw_params(splitter="&", include_pseudomac=False)
@@ -372,7 +373,8 @@ class PaymentTest(TestCase):
         commerce.webpay_key_id = '101'
         self.payment_kwargs['session_id'] = None
         payment = Payment(**self.payment_kwargs)
-        raw_params_file_path = os.path.join(os.path.dirname(__file__), 'raw_params_sharp_no_pseudomac_no_session.txt')
+        raw_params_file_path = os.path.join(
+            os.path.dirname(__file__), 'fixtures', 'raw_params_sharp_no_pseudomac_no_session.txt')
         with open(raw_params_file_path, 'r') as raw_params_file:
             raw_params = raw_params_file.read()
             result = payment.raw_params(include_pseudomac=False)
