@@ -3,9 +3,10 @@ import base64
 from unittest import TestCase
 
 import mock
-from Crypto.Hash import SHA256
+from Crypto.Hash import SHA512
 from Crypto.PublicKey import RSA
-from Crypto.Cipher import AES
+from Crypto.Cipher import AES, PKCS1_OAEP
+from Crypto.Signature import PKCS1_v1_5
 from Crypto import Random
 
 from tbk.webpay.encryption import Encryption
@@ -14,9 +15,9 @@ from tbk.webpay.encryption import Encryption
 class EncryptionTest(TestCase):
     def setUp(self):
         sender_key_path = os.path.join(os.path.dirname(__file__), 'keys', 'test_commerce.pem')
-        self.sender_key = RSA.importKey(file(sender_key_path, 'r').read())
+        self.sender_key = RSA.importKey(open(sender_key_path, 'r').read())
         recipient_key_path = os.path.join(os.path.dirname(__file__), 'keys', 'webpay_test.101.pem')
-        self.recipient_key = RSA.importKey(file(recipient_key_path, 'r').read()).publickey()
+        self.recipient_key = RSA.importKey(open(recipient_key_path, 'r').read()).publickey()
 
     def test_init(self):
         encryption = Encryption(self.sender_key, self.recipient_key)
@@ -71,12 +72,13 @@ class EncryptionTest(TestCase):
 
     def test_encrypt_key(self):
         key = Random.new().read(32)
+        cipher = PKCS1_OAEP.new(self.sender_key)
         encryption = Encryption(self.sender_key, self.sender_key)
 
         encrypted_key = encryption.encrypt_key(key)
 
         self.assertEqual(
-            self.sender_key.decrypt(encrypted_key),
+            cipher.decrypt(encrypted_key),
             key
         )
 
@@ -87,8 +89,9 @@ class EncryptionTest(TestCase):
         signed_message = encryption.sign_message(message)
 
         public_key = self.sender_key.publickey()
-        digest = SHA256.new(message).digest()
-        self.assertTrue(public_key.verify(digest, (signed_message,)))
+        hash = SHA512.new(message)
+        verifier = PKCS1_v1_5.new(public_key)
+        self.assertTrue(verifier.verify(hash, signed_message))
 
     def test_encrypt_message(self):
         encryption = Encryption(self.sender_key, self.recipient_key)

@@ -17,7 +17,7 @@ class CommerceTest(TestCase):
         self.assertEqual(commerce.id, "12345")
         self.assertEqual(commerce.key, Commerce.TEST_COMMERCE_KEY)
         self.assertTrue(commerce.testing)
-        self.assertEqual("101", commerce.webpay_key_id)
+        self.assertEqual(101, commerce.webpay_key_id)
 
     def test_no_id_given(self):
         """

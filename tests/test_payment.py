@@ -171,6 +171,7 @@ class PaymentTest(TestCase):
         payment = Payment(**self.payment_kwargs)
         response = requests.post.return_value
         response.status_code = 200
+        response.is_redirect = False
         decrypted = {'body': 'TOKEN=aA123,ERROR=0'}
         commerce.webpay_decrypt.return_value = decrypted
 
@@ -186,7 +187,8 @@ class PaymentTest(TestCase):
             },
             headers={
                 'User-Agent': user_agent
-            }
+            },
+            allow_redirects=False
         )
         commerce.webpay_decrypt.assert_called_once_with(response.content)
 
@@ -202,6 +204,7 @@ class PaymentTest(TestCase):
         payment = Payment(**self.payment_kwargs)
         response = requests.post.return_value
         response.status_code = 500
+        response.is_redirect = False
 
         self.assertRaisesRegexp(
             PaymentError, "Payment token generation failed",
@@ -217,6 +220,7 @@ class PaymentTest(TestCase):
         """
         payment = Payment(**self.payment_kwargs)
         response = requests.post.return_value
+        response.is_redirect = False
         response.status_code = 200
         commerce = self.payment_kwargs['commerce']
         decrypted = {'body': 'TOKEN=aA123,ERROR=aA321'}

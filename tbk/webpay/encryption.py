@@ -1,8 +1,9 @@
 import base64
 
 from Crypto import Random
-from Crypto.Hash import SHA256
-from Crypto.Cipher import AES
+from Crypto.Hash import SHA512
+from Crypto.Cipher import AES, PKCS1_OAEP
+from Crypto.Signature import PKCS1_v1_5
 
 
 class Encryption(object):
@@ -19,11 +20,18 @@ class Encryption(object):
         signed_message = self.sign_message(message)
         encrypted_message = self.encrypt_message(signed_message, message, key, iv)
 
-        return base64.b64encode(iv + encrypted_key + encrypted_message)
+        return_message = base64.b64encode(iv + encrypted_key + encrypted_message)
+        # return return_message
+        chunks = list()
+        while return_message:
+            chunks.append(return_message[:60])
+            return_message = return_message[60:]
+        return "\n".join(chunks)
 
     def sign_message(self, message):
-        digest = SHA256.new(message).digest()
-        return self.sender_key.sign(digest, None)[0]
+        hash = SHA512.new(message)
+        signer = PKCS1_v1_5.new(self.sender_key)
+        return signer.sign(hash)
 
     def encrypt_message(self, signed_message, message, key, iv):
         raw = str(signed_message) + str(message)
@@ -35,11 +43,11 @@ class Encryption(object):
 
     def encrypt_key(self, key):
         public_key = self.recipient_key.publickey()
-        return public_key.encrypt(key, None)[0]
+        cipher = PKCS1_OAEP.new(public_key)
+        return cipher.encrypt(key)
 
     def get_key(self):
         return Random.new().read(32)
 
     def get_iv(self):
-        # sagmor adds \x10\xBB\xFF\xBF\x00\x00\x00\x00\x00\x00\x00\x00\xF4\xBF to this, why?
         return Random.new().read(16)

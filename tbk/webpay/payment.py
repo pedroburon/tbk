@@ -56,18 +56,26 @@ class Payment(object):
         return self._token
 
     def fetch_token(self):
-        response = requests.post(
-            self.validation_url(),
-            data={
-                'TBK_VERSION_KCC': TBK_VERSION_KCC,
-                'TBK_CODIGO_COMERCIO': self.commerce.id,
-                'TBK_KEY_ID': self.commerce.webpay_key_id,
-                'TBK_PARAM': self.params()
-            },
-            headers={
-                'User-Agent': USER_AGENT
-            }
-        )
+        validation_url = self.validation_url()
+        is_redirect = True
+
+        while is_redirect:
+            response = requests.post(
+                validation_url,
+                data={
+                    'TBK_VERSION_KCC': TBK_VERSION_KCC,
+                    'TBK_CODIGO_COMERCIO': self.commerce.id,
+                    'TBK_KEY_ID': self.commerce.webpay_key_id,
+                    'TBK_PARAM': self.params()
+                },
+                headers={
+                    'User-Agent': USER_AGENT
+                },
+                allow_redirects=False
+            )
+            is_redirect = response.is_redirect
+            validation_url = response.headers.get('location')
+
         if response.status_code != 200:
             raise PaymentError("Payment token generation failed")
 

@@ -16,7 +16,7 @@ WEBPAY_KEY_PATH = os.path.join(KEYS_DIR, 'webpay.101.pem')
 class Commerce(object):
     TEST_COMMERCE_KEY = open(TEST_COMMERCE_KEY_PATH, 'r').read()
 
-    webpay_key_id = "101"
+    webpay_key_id = 101
 
     def __init__(self, id, key, testing=False):
         self.id = id
