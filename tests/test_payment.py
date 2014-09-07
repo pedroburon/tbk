@@ -172,7 +172,7 @@ class PaymentTest(TestCase):
         response = requests.post.return_value
         response.status_code = 200
         response.is_redirect = False
-        decrypted = {'body': 'TOKEN=aA123,ERROR=0'}
+        decrypted = 'ERROR=0\nTOKEN=e975ffc4f0605ddf3afc299eee6aeffb59efba24769548acf58e34a89ae4e228\n'
         commerce.webpay_decrypt.return_value = decrypted
 
         token = payment.fetch_token()
@@ -192,7 +192,7 @@ class PaymentTest(TestCase):
         )
         commerce.webpay_decrypt.assert_called_once_with(response.content)
 
-        self.assertEqual(token, 'aA123')
+        self.assertEqual(token, 'e975ffc4f0605ddf3afc299eee6aeffb59efba24769548acf58e34a89ae4e228')
 
     @mock.patch('tbk.webpay.payment.requests')
     @mock.patch('tbk.webpay.payment.Payment.validation_url')
@@ -223,7 +223,7 @@ class PaymentTest(TestCase):
         response.is_redirect = False
         response.status_code = 200
         commerce = self.payment_kwargs['commerce']
-        decrypted = {'body': 'TOKEN=aA123,ERROR=aA321'}
+        decrypted = 'ERROR=aA321\nTOKEN=e975ffc4f0605ddf3afc299eee6aeffb59efba24769548acf58e34a89ae4e228\n'
         commerce.webpay_decrypt.return_value = decrypted
 
         self.assertRaisesRegexp(

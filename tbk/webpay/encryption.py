@@ -87,7 +87,7 @@ class Decryption(object):
         return unpad(cipher.decrypt(encrypted_message))
 
     def get_signature(self, decrypted_message):
-        sender_key_bytes = self.recipient_key.publickey().n.bit_length() / 8
+        sender_key_bytes = self.sender_key.publickey().n.bit_length() / 8
         return decrypted_message[:sender_key_bytes]
 
     def get_message(self, decrypted_message):
@@ -95,7 +95,10 @@ class Decryption(object):
         return decrypted_message[sender_key_bytes:]
 
     def verify(self, signature, message):
-        return True
+        hash = SHA512.new(message)
+        verifier = PKCS1_v1_5.new(self.sender_key)
+
+        return verifier.verify(hash, signature)
 
 
 class InvalidMessageException(Exception):

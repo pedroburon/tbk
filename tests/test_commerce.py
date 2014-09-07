@@ -67,12 +67,6 @@ class CommerceTest(TestCase):
 
         self.assertFalse(Config.called)
 
-    def test_webpay_decrypt(self):
-        commerce = Commerce.create_commerce()
-
-        result = commerce.webpay_decrypt("encrypted")
-        self.assertIsInstance(result, dict)
-
     @mock.patch('tbk.webpay.commerce.Commerce.get_commerce_key')
     @mock.patch('tbk.webpay.commerce.Commerce.get_webpay_key')
     @mock.patch('tbk.webpay.commerce.Encryption')
@@ -89,6 +83,23 @@ class CommerceTest(TestCase):
         get_webpay_key.assert_called_once_with()
         get_commerce_key.assert_called_once_with()
         self.assertEqual(result, encryption.encrypt.return_value)
+
+    @mock.patch('tbk.webpay.commerce.Commerce.get_commerce_key')
+    @mock.patch('tbk.webpay.commerce.Commerce.get_webpay_key')
+    @mock.patch('tbk.webpay.commerce.Decryption')
+    def test_webpay_decrypt(self, Decryption, get_webpay_key, get_commerce_key):
+        commerce = Commerce.create_commerce()
+        message = "encrypted"
+
+        result = commerce.webpay_decrypt(message)
+
+        Decryption.assert_called_once_with(get_commerce_key.return_value,
+                                           get_webpay_key.return_value)
+        decryption = Decryption.return_value
+        decryption.decrypt.assert_called_once_with(message)
+        get_webpay_key.assert_called_once_with()
+        get_commerce_key.assert_called_once_with()
+        self.assertEqual(result, decryption.decrypt.return_value)
 
     def test_get_commerce_key(self):
         testing_path = os.path.join(os.path.dirname(__file__), 'keys', 'test_commerce.pem')

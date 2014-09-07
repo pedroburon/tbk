@@ -1,5 +1,4 @@
 import sys
-import re
 import random
 import hashlib
 
@@ -19,8 +18,6 @@ USER_AGENT = "TBK/%(TBK_VERSION_KCC)s (Python/%(PYTHON_VERSION)s)" % {
     'TBK_VERSION_KCC': TBK_VERSION_KCC,
     'PYTHON_VERSION': PYTHON_VERSION
 }
-ERROR_REGEXP = re.compile(r'.*(ERROR=)([a-zA-Z0-9]+).*')
-TOKEN_REGEXP = re.compile(r'.*(TOKEN=)([a-zA-Z0-9]+).*')
 
 
 class Payment(object):
@@ -79,16 +76,22 @@ class Payment(object):
         if response.status_code != 200:
             raise PaymentError("Payment token generation failed")
 
-        body = self.commerce.webpay_decrypt(response.content)['body']
+        body = self.commerce.webpay_decrypt(response.content)
 
         return self.get_token_from_body(body)
 
     def get_token_from_body(self, body):
-        error_match = ERROR_REGEXP.match(body)
-        if error_match.group(2) != "0":
-            raise PaymentError("Payment token generation failed. ERROR=%s" % error_match.group(2))
-        token_match = TOKEN_REGEXP.match(body)
-        return token_match.group(2)
+        TOKEN = 'TOKEN='
+        ERROR = 'ERROR='
+        lines = body.strip().split('\n')
+        for line in lines:
+            if line.startswith(TOKEN):
+                token = line[len(TOKEN):]
+            elif line.startswith(ERROR):
+                error = line[len(ERROR):]
+        if error != '0':
+            raise PaymentError("Payment token generation failed. ERROR=%s" % error)
+        return token
 
     def process_url(self):
         if self.commerce.testing:

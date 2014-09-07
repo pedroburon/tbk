@@ -1,7 +1,7 @@
 import os
 
 from .config import Config
-from .encryption import Encryption
+from .encryption import Encryption, Decryption
 
 from Crypto.PublicKey import RSA
 
@@ -31,7 +31,11 @@ class Commerce(object):
                         config.environment == config.DEVELOPMENT)
 
     def webpay_decrypt(self, encrypted):
-        return {}
+        commerce_key = self.get_commerce_key()
+        webpay_key = self.get_webpay_key()
+        decryption = Decryption(commerce_key, webpay_key)
+        decrypted = decryption.decrypt(encrypted)
+        return decrypted
 
     def webpay_encrypt(self, decrypted):
         commerce_key = self.get_commerce_key()

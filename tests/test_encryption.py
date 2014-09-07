@@ -1,4 +1,3 @@
-import os
 import base64
 from unittest import TestCase
 
@@ -11,14 +10,18 @@ from Crypto import Random
 
 from tbk.webpay.encryption import Encryption, Decryption, InvalidMessageException
 
+WEBPAY_KEY = RSA.generate(4096)
+WEBPAY_KEY_PUBLIC = WEBPAY_KEY.publickey()
+COMMERCE_KEY = RSA.generate(2048)
+COMMERCE_KEY_PUBLIC = COMMERCE_KEY.publickey()
+
 
 class EncryptionTest(TestCase):
 
     def setUp(self):
-        sender_key_path = os.path.join(os.path.dirname(__file__), 'keys', 'test_commerce.pem')
-        self.sender_key = RSA.importKey(open(sender_key_path, 'r').read())
-        recipient_key_path = os.path.join(os.path.dirname(__file__), 'keys', 'webpay_test.101.pem')
-        self.recipient_key = RSA.importKey(open(recipient_key_path, 'r').read()).publickey()
+        self.sender_key = COMMERCE_KEY
+        self.recipient_key_private = WEBPAY_KEY
+        self.recipient_key = WEBPAY_KEY_PUBLIC
 
     def test_init(self):
         encryption = Encryption(self.sender_key, self.recipient_key)
@@ -73,8 +76,8 @@ class EncryptionTest(TestCase):
 
     def test_encrypt_key(self):
         key = Random.new().read(32)
-        cipher = PKCS1_OAEP.new(self.sender_key)
-        encryption = Encryption(self.sender_key, self.sender_key)
+        cipher = PKCS1_OAEP.new(self.recipient_key_private)
+        encryption = Encryption(self.sender_key, self.recipient_key)
 
         encrypted_key = encryption.encrypt_key(key)
 
@@ -113,10 +116,9 @@ class EncryptionTest(TestCase):
 class DecryptionTest(TestCase):
 
     def setUp(self):
-        sender_key_path = os.path.join(os.path.dirname(__file__), 'keys', 'test_commerce.pem')
-        self.sender_key = RSA.importKey(open(sender_key_path, 'r').read())
-        recipient_key_path = os.path.join(os.path.dirname(__file__), 'keys', 'webpay_test.101.pem')
-        self.recipient_key = RSA.importKey(open(recipient_key_path, 'r').read()).publickey()
+        self.sender_key_private = WEBPAY_KEY
+        self.sender_key = WEBPAY_KEY_PUBLIC
+        self.recipient_key = COMMERCE_KEY
 
     def test_init(self):
         decryption = Decryption(self.recipient_key, self.sender_key)
@@ -171,26 +173,26 @@ class DecryptionTest(TestCase):
         self.assertEqual(iv, decryption.get_iv(raw))
 
     def test_get_key(self):
-        decryption = Decryption(self.sender_key, self.sender_key)
+        decryption = Decryption(self.recipient_key, self.sender_key)
         raw = Random.new().read(16)
         key = Random.new().read(32)
-        cipher = PKCS1_OAEP.new(self.sender_key)
+        cipher = PKCS1_OAEP.new(self.recipient_key.publickey())
         encrypted_key = cipher.encrypt(key)
         raw += encrypted_key + Random.new().read(2000)
 
         self.assertEqual(key, decryption.get_key(raw))
 
     def test_get_decrypted_message(self):
-        sender_key_bytes = self.sender_key.publickey().n.bit_length() / 8
+        recipient_key_bytes = self.recipient_key.publickey().n.bit_length() / 8
         decryption = Decryption(self.recipient_key, self.sender_key)
         iv = Random.new().read(16)
         key = Random.new().read(32)
-        encrypted_key = Random.new().read(sender_key_bytes)
-        message = Random.new().read(2000)
+        encrypted_key = Random.new().read(recipient_key_bytes)
+        message = "a" * 2000
         block_size = AES.block_size
         pad = lambda s: s + (block_size - len(s) % block_size) * chr(block_size - len(s) % block_size)
         message_to_encrypt = pad(message)
-        cipher = AES.new(key, AES.MODE_CBC, iv)
+        cipher = AES.new(key, mode=AES.MODE_CBC, IV=iv)
         encrypted_message = cipher.encrypt(message_to_encrypt)
 
         self.assertEqual(message,
@@ -201,7 +203,26 @@ class DecryptionTest(TestCase):
         decryption = Decryption(self.recipient_key, self.sender_key)
 
         signature = Random.new().read(sender_key_bytes)
-        message = Random.new().read(2000)
+        message = Random.new().read(500)
         decrypted_message = signature + message
 
         self.assertEqual(signature, decryption.get_signature(decrypted_message))
+
+    def test_verify_true(self):
+        decryption = Decryption(self.recipient_key, self.sender_key)
+        message = 'ERROR=aA321\nTOKEN=e975ffc4f0605ddf3afc299eee6aeffb59efba24769548acf58e34a89ae4e228\n'
+        hash = SHA512.new(message)
+        signer = PKCS1_v1_5.new(self.sender_key_private)
+        signature = signer.sign(hash)
+
+        self.assertTrue(decryption.verify(signature, message))
+
+    def test_verify_false(self):
+        decryption = Decryption(self.recipient_key, self.sender_key)
+        wrong_message = 'ERROR=0\nTOKEN=e975ffc4f0605ddf3afc299eee6aeffb59efba24769548acf58e34a89ae4e228\n'
+        message = 'ERROR=aA321\nTOKEN=e975ffc4f0605ddf3afc299eee6aeffb59efba24769548acf58e34a89ae4e228\n'
+        hash = SHA512.new(wrong_message)
+        signer = PKCS1_v1_5.new(self.sender_key_private)
+        signature = signer.sign(hash)
+
+        self.assertFalse(decryption.verify(signature, message))
