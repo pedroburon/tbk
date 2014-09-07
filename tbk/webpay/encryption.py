@@ -5,6 +5,8 @@ from Crypto.Hash import SHA512
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.Signature import PKCS1_v1_5
 
+__all__ = ['Encryption', 'Decryption', 'InvalidMessageException']
+
 
 class Encryption(object):
     def __init__(self, sender_key, recipient_key):
@@ -20,13 +22,7 @@ class Encryption(object):
         signed_message = self.sign_message(message)
         encrypted_message = self.encrypt_message(signed_message, message, key, iv)
 
-        return_message = base64.b64encode(iv + encrypted_key + encrypted_message)
-        # return return_message
-        chunks = list()
-        while return_message:
-            chunks.append(return_message[:60])
-            return_message = return_message[60:]
-        return "\n".join(chunks)
+        return base64.b64encode(iv + encrypted_key + encrypted_message)
 
     def sign_message(self, message):
         hash = SHA512.new(message)
@@ -51,3 +47,56 @@ class Encryption(object):
 
     def get_iv(self):
         return Random.new().read(16)
+
+
+class Decryption(object):
+    def __init__(self, recipient_key, sender_key):
+        self.sender_key = sender_key
+        self.recipient_key = recipient_key
+
+    def decrypt(self, message):
+        raw = base64.b64decode(message)
+
+        iv = self.get_iv(raw)
+        key = self.get_key(raw)
+
+        decrypted_message = self.get_decrypted_message(iv, key, raw)
+
+        signature = self.get_signature(decrypted_message)
+        message = self.get_message(decrypted_message)
+
+        if self.verify(signature, message):
+            return message
+
+        raise InvalidMessageException("Invalida message signature")
+
+    def get_iv(self, raw):
+        return raw[:16]
+
+    def get_key(self, raw):
+        recipient_key_bytes = self.recipient_key.publickey().n.bit_length() / 8
+        encrypted_key = raw[16:16 + recipient_key_bytes]
+        cipher = PKCS1_OAEP.new(self.recipient_key)
+        return cipher.decrypt(encrypted_key)
+
+    def get_decrypted_message(self, iv, key, raw):
+        recipient_key_bytes = self.recipient_key.publickey().n.bit_length() / 8
+        encrypted_message = raw[16 + recipient_key_bytes:]
+        unpad = lambda s: s[0:-ord(s[-1])]
+        cipher = AES.new(key, AES.MODE_CBC, iv)
+        return unpad(cipher.decrypt(encrypted_message))
+
+    def get_signature(self, decrypted_message):
+        sender_key_bytes = self.recipient_key.publickey().n.bit_length() / 8
+        return decrypted_message[:sender_key_bytes]
+
+    def get_message(self, decrypted_message):
+        sender_key_bytes = self.sender_key.publickey().n.bit_length() / 8
+        return decrypted_message[sender_key_bytes:]
+
+    def verify(self, signature, message):
+        return True
+
+
+class InvalidMessageException(Exception):
+    pass
