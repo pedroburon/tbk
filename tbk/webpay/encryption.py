@@ -84,7 +84,7 @@ class Decryption(object):
         encrypted_message = raw[16 + recipient_key_bytes:]
         unpad = lambda s: s[:-ord(s[len(s) - 1:])]
         cipher = AES.new(key, AES.MODE_CBC, iv)
-        return unpad(cipher.decrypt(encrypted_message)).decode("utf-8")
+        return unpad(cipher.decrypt(encrypted_message))
 
     def get_signature(self, decrypted_message):
         sender_key_bytes = int(self.sender_key.publickey().n.bit_length() / 8)

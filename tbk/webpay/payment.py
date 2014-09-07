@@ -1,8 +1,9 @@
 import sys
 import random
 import hashlib
+import re
 
-import six.moves.urllib.parse as urlparse
+from six.moves.urllib.parse import urlparse
 
 import requests
 
@@ -110,8 +111,21 @@ class Payment(object):
         return self._params
 
     def verify(self):
-        pass  # pragma: no cover
-        # TODO
+        if self.commerce is None:
+            raise PaymentError("Commerce required")
+        if self.amount is None or self.amount <= 0:
+            raise PaymentError("Invalid amount %s" % self.amount)
+        if self.order_id is None:
+            raise PaymentError("Order ID required")
+        if self.success_url is None:
+            raise PaymentError("Success URL required")
+        if self.confirmation_url is None:
+            raise PaymentError("Confirmation URL required")
+        confirmation_uri = urlparse(self.confirmation_url)
+        if re.match('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', confirmation_uri.hostname) is None:
+            raise PaymentError("Confirmation URL host MUST be an IP address")
+        if confirmation_uri.port not in (80, 8080):
+            raise PaymentError("Confirmation URL port MUST be 80 or 8080")
 
     def transaction_id(self):
         if not self._transaction_id:
@@ -123,7 +137,7 @@ class Payment(object):
         params += ["TBK_ORDEN_COMPRA=%d" % self.order_id]
         params += ["TBK_CODIGO_COMERCIO=%s" % self.commerce.id]
         params += ["TBK_ID_TRANSACCION=%s" % self.transaction_id()]
-        uri = urlparse.urlparse(self.confirmation_url)
+        uri = urlparse(self.confirmation_url)
         params += ["TBK_URL_CGI_COMERCIO=%s" % uri.path]
         params += ["TBK_SERVIDOR_COMERCIO=%s" % uri.hostname]
         params += ["TBK_PUERTO_COMERCIO=%s" % uri.port]
