@@ -74,24 +74,24 @@ class Decryption(object):
         return raw[:16]
 
     def get_key(self, raw):
-        recipient_key_bytes = self.recipient_key.publickey().n.bit_length() / 8
+        recipient_key_bytes = int(self.recipient_key.publickey().n.bit_length() / 8)
         encrypted_key = raw[16:16 + recipient_key_bytes]
         cipher = PKCS1_OAEP.new(self.recipient_key)
         return cipher.decrypt(encrypted_key)
 
     def get_decrypted_message(self, iv, key, raw):
-        recipient_key_bytes = self.recipient_key.publickey().n.bit_length() / 8
+        recipient_key_bytes = int(self.recipient_key.publickey().n.bit_length() / 8)
         encrypted_message = raw[16 + recipient_key_bytes:]
-        unpad = lambda s: s[0:-ord(s[-1])]
+        unpad = lambda s: s[:-ord(s[len(s) - 1:])]
         cipher = AES.new(key, AES.MODE_CBC, iv)
-        return unpad(cipher.decrypt(encrypted_message))
+        return unpad(cipher.decrypt(encrypted_message)).decode("utf-8")
 
     def get_signature(self, decrypted_message):
-        sender_key_bytes = self.sender_key.publickey().n.bit_length() / 8
+        sender_key_bytes = int(self.sender_key.publickey().n.bit_length() / 8)
         return decrypted_message[:sender_key_bytes]
 
     def get_message(self, decrypted_message):
-        sender_key_bytes = self.sender_key.publickey().n.bit_length() / 8
+        sender_key_bytes = int(self.sender_key.publickey().n.bit_length() / 8)
         return decrypted_message[sender_key_bytes:]
 
     def verify(self, signature, message):

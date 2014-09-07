@@ -107,7 +107,7 @@ class EncryptionTest(TestCase):
         encrypted = encryption.encrypt_message(signed_message, message, key, iv)
 
         cipher = AES.new(key, AES.MODE_CBC, iv)
-        unpad = lambda s: s[0:-ord(s[-1])]
+        unpad = lambda s: s[:-ord(s[len(s) - 1:])]
         decrypted = unpad(cipher.decrypt(encrypted))
 
         self.assertEqual(decrypted, str(signed_message) + str(message))
@@ -183,7 +183,7 @@ class DecryptionTest(TestCase):
         self.assertEqual(key, decryption.get_key(raw))
 
     def test_get_decrypted_message(self):
-        recipient_key_bytes = self.recipient_key.publickey().n.bit_length() / 8
+        recipient_key_bytes = int(self.recipient_key.publickey().n.bit_length() / 8)
         decryption = Decryption(self.recipient_key, self.sender_key)
         iv = Random.new().read(16)
         key = Random.new().read(32)
@@ -199,7 +199,7 @@ class DecryptionTest(TestCase):
                          decryption.get_decrypted_message(iv, key, iv + encrypted_key + encrypted_message))
 
     def test_get_signature(self):
-        sender_key_bytes = self.sender_key.publickey().n.bit_length() / 8
+        sender_key_bytes = int(self.sender_key.publickey().n.bit_length() / 8)
         decryption = Decryption(self.recipient_key, self.sender_key)
 
         signature = Random.new().read(sender_key_bytes)
