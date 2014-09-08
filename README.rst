@@ -1,12 +1,19 @@
 tbk
 ===
 
-[![Build Status](https://travis-ci.org/pedroburon/tbk.svg)](https://travis-ci.org/pedroburon/tbk)
-[![Coverage Status](https://img.shields.io/coveralls/pedroburon/tbk.svg)](https://coveralls.io/r/pedroburon/tbk)
+|Build Status| |Coverage Status|
 
-Python implementation of Transbank's Webpay protocol. A port from ruby implementation http://github.com/sagmor/tbk.
+Python implementation of Transbank's Webpay protocol. A port from ruby
+implementation http://github.com/sagmor/tbk.
 
-Currently trying to make this happen:
+.. raw:: html
+
+   <!-- split here -->
+
+Usage
+-----
+
+::
 
     payment = Payment(
         request_ip='123.123.123.123',
@@ -22,18 +29,38 @@ Currently trying to make this happen:
 
 More info at http://github.com/sagmor/tbk
 
+TODO: 
+
+* *Fetch token* - Ready!
+* Confirmation 
+* Logging
+
+About webpay communication protocol:
+http://sagmor.com/rants/technical/webpay-communication-protocol/
+
 Install for development
 -----------------------
 
 After cloning the repo:
 
+::
+
     python setup.py develop
 
 For testing purposes:
+
+::
 
     python setup.py test
 
 Recommended:
 
+::
+
     pip install nosy
     nosy
+
+.. |Build Status| image:: https://travis-ci.org/pedroburon/tbk.svg
+   :target: https://travis-ci.org/pedroburon/tbk
+.. |Coverage Status| image:: https://img.shields.io/coveralls/pedroburon/tbk.svg
+   :target: https://coveralls.io/r/pedroburon/tbk
