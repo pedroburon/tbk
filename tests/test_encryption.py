@@ -132,7 +132,7 @@ class DecryptionTest(TestCase):
     @mock.patch('tbk.webpay.encryption.Decryption.get_signature')
     @mock.patch('tbk.webpay.encryption.Decryption.get_message')
     @mock.patch('tbk.webpay.encryption.Decryption.verify')
-    def test_encrypt(self, verify, get_message, get_signature, get_decrypted_message, get_key, get_iv):
+    def test_decrypt(self, verify, get_message, get_signature, get_decrypted_message, get_key, get_iv):
         decryption = Decryption(self.recipient_key, self.sender_key)
         raw = Random.new().read(2000)
         encrypted = base64.b64encode(raw)
@@ -143,7 +143,10 @@ class DecryptionTest(TestCase):
         key = get_key.return_value
         verify.return_value = True
 
-        self.assertEqual(message, decryption.decrypt(encrypted))
+        returned_message, returned_signature = decryption.decrypt(encrypted)
+
+        self.assertEqual(message, returned_message)
+        self.assertEqual(signature, returned_signature)
         get_message.assert_called_once_with(decrypted_message)
         get_decrypted_message.assert_called_once_with(iv, key, raw)
         get_iv.assert_called_once_with(raw)
@@ -157,7 +160,7 @@ class DecryptionTest(TestCase):
     @mock.patch('tbk.webpay.encryption.Decryption.get_signature')
     @mock.patch('tbk.webpay.encryption.Decryption.get_message')
     @mock.patch('tbk.webpay.encryption.Decryption.verify')
-    def test_encrypt_invalid(self, verify, get_message, get_signature, get_decrypted_message, get_key, get_iv):
+    def test_decrypt_invalid(self, verify, get_message, get_signature, get_decrypted_message, get_key, get_iv):
         decryption = Decryption(self.recipient_key, self.sender_key)
         raw = Random.new().read(2000)
         encrypted = base64.b64encode(raw)
@@ -208,6 +211,16 @@ class DecryptionTest(TestCase):
         decrypted_message = signature + message
 
         self.assertEqual(signature, decryption.get_signature(decrypted_message))
+
+    def test_get_message(self):
+        sender_key_bytes = int(self.sender_key.publickey().n.bit_length() / 8)
+        decryption = Decryption(self.recipient_key, self.sender_key)
+
+        signature = Random.new().read(sender_key_bytes)
+        message = Random.new().read(500)
+        decrypted_message = signature + message
+
+        self.assertEqual(message, decryption.get_message(decrypted_message))
 
     def test_verify_true(self):
         decryption = Decryption(self.recipient_key, self.sender_key)

@@ -77,7 +77,7 @@ class Payment(object):
         if response.status_code != 200:
             raise PaymentError("Payment token generation failed")
 
-        body = self.commerce.webpay_decrypt(response.content)
+        body, _ = self.commerce.webpay_decrypt(response.content)
 
         return self.get_token_from_body(body)
 

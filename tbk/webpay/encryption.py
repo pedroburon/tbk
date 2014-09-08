@@ -66,7 +66,7 @@ class Decryption(object):
         message = self.get_message(decrypted_message)
 
         if self.verify(signature, message):
-            return message
+            return message, signature
 
         raise InvalidMessageException("Invalid message signature")
 

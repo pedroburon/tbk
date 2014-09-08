@@ -173,7 +173,8 @@ class PaymentTest(TestCase):
         response.status_code = 200
         response.is_redirect = False
         decrypted = 'ERROR=0\nTOKEN=e975ffc4f0605ddf3afc299eee6aeffb59efba24769548acf58e34a89ae4e228\n'
-        commerce.webpay_decrypt.return_value = decrypted
+        signature = "signature" * 20
+        commerce.webpay_decrypt.return_value = decrypted, signature
 
         token = payment.fetch_token()
 
@@ -211,7 +212,8 @@ class PaymentTest(TestCase):
         response2.status_code = 200
         requests.post.side_effect = [response1, response2]
         decrypted = 'ERROR=0\nTOKEN=e975ffc4f0605ddf3afc299eee6aeffb59efba24769548acf58e34a89ae4e228\n'
-        commerce.webpay_decrypt.return_value = decrypted
+        signature = "signature" * 20
+        commerce.webpay_decrypt.return_value = decrypted, signature
 
         token = payment.fetch_token()
 
@@ -249,7 +251,8 @@ class PaymentTest(TestCase):
         response.status_code = 200
         commerce = self.payment_kwargs['commerce']
         decrypted = 'ERROR=aA321\nTOKEN=e975ffc4f0605ddf3afc299eee6aeffb59efba24769548acf58e34a89ae4e228\n'
-        commerce.webpay_decrypt.return_value = decrypted
+        signature = "signature" * 20
+        commerce.webpay_decrypt.return_value = decrypted, signature
 
         self.assertRaisesRegexp(
             PaymentError, "Payment token generation failed. ERROR=aA321",
