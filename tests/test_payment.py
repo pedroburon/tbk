@@ -197,6 +197,31 @@ class PaymentTest(TestCase):
     @mock.patch('tbk.webpay.payment.requests')
     @mock.patch('tbk.webpay.payment.Payment.validation_url')
     @mock.patch('tbk.webpay.payment.Payment.params')
+    def test_fetch_token_with_redirect(self, params, validation_url, requests):
+        """
+        payment.fetch_token must post data to validation_url and get token from response after redirect.
+        """
+        commerce = self.payment_kwargs['commerce']
+        payment = Payment(**self.payment_kwargs)
+        response1 = mock.Mock()
+        response1.is_redirect = True
+        response1.status_code = 302
+        response2 = mock.Mock()
+        response2.is_redirect = False
+        response2.status_code = 200
+        requests.post.side_effect = [response1, response2]
+        decrypted = 'ERROR=0\nTOKEN=e975ffc4f0605ddf3afc299eee6aeffb59efba24769548acf58e34a89ae4e228\n'
+        commerce.webpay_decrypt.return_value = decrypted
+
+        token = payment.fetch_token()
+
+        commerce.webpay_decrypt.assert_called_once_with(response2.content)
+
+        self.assertEqual(token, 'e975ffc4f0605ddf3afc299eee6aeffb59efba24769548acf58e34a89ae4e228')
+
+    @mock.patch('tbk.webpay.payment.requests')
+    @mock.patch('tbk.webpay.payment.Payment.validation_url')
+    @mock.patch('tbk.webpay.payment.Payment.params')
     def test_fetch_token_not_ok(self, params, validation_url, requests):
         """
         payment.fetch_token must post data to validation_url and fail when status_code is not 200
@@ -405,3 +430,83 @@ class PaymentTest(TestCase):
 
         self.assertEqual(first_result,
                          payment.transaction_id())
+
+    def test_verify(self):
+        payment = Payment(**self.payment_kwargs)
+
+        self.assertEqual(None, payment.verify())
+
+    def test_verify_no_commerce(self):
+        payment = Payment(**self.payment_kwargs)
+        payment.commerce = None
+
+        self.assertRaisesRegexp(
+            PaymentError, "Commerce required",
+            payment.verify
+        )
+
+    def test_verify_amount_lt0(self):
+        payment = Payment(**self.payment_kwargs)
+        payment.amount = None
+
+        self.assertRaisesRegexp(
+            PaymentError, "Invalid amount None",
+            payment.verify
+        )
+        payment.amount = 0
+        self.assertRaisesRegexp(
+            PaymentError, "Invalid amount 0",
+            payment.verify
+        )
+
+        payment.amount = -1000
+
+        self.assertRaisesRegexp(
+            PaymentError, "Invalid amount -100",
+            payment.verify
+        )
+
+    def test_verify_no_order_id(self):
+        payment = Payment(**self.payment_kwargs)
+        payment.order_id = None
+
+        self.assertRaisesRegexp(
+            PaymentError, "Order ID required",
+            payment.verify
+        )
+
+    def test_verify_no_success_url(self):
+        payment = Payment(**self.payment_kwargs)
+        payment.success_url = None
+
+        self.assertRaisesRegexp(
+            PaymentError, "Success URL required",
+            payment.verify
+        )
+
+    def test_verify_no_confirmation_url(self):
+        payment = Payment(**self.payment_kwargs)
+        payment.confirmation_url = None
+
+        self.assertRaisesRegexp(
+            PaymentError, "Confirmation URL required",
+            payment.verify
+        )
+
+    def test_verify_no_confirmation_ip(self):
+        payment = Payment(**self.payment_kwargs)
+        payment.confirmation_url = "http://example.org/confirmation"
+
+        self.assertRaisesRegexp(
+            PaymentError, "Confirmation URL host MUST be an IP address",
+            payment.verify
+        )
+
+    def test_verify_no_confirmation_port_in_80_8080(self):
+        payment = Payment(**self.payment_kwargs)
+        payment.confirmation_url = "http://123.123.123.123:8000"
+
+        self.assertRaisesRegexp(
+            PaymentError, "Confirmation URL port MUST be 80 or 8080",
+            payment.verify
+        )

@@ -68,7 +68,7 @@ class Decryption(object):
         if self.verify(signature, message):
             return message
 
-        raise InvalidMessageException("Invalida message signature")
+        raise InvalidMessageException("Invalid message signature")
 
     def get_iv(self, raw):
         return raw[:16]

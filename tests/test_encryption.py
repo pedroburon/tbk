@@ -163,7 +163,8 @@ class DecryptionTest(TestCase):
         encrypted = base64.b64encode(raw)
         verify.return_value = False
 
-        self.assertRaises(InvalidMessageException, decryption.decrypt, encrypted)
+        self.assertRaisesRegexp(InvalidMessageException, "Invalid message signature",
+                                decryption.decrypt, encrypted)
 
     def test_get_iv(self):
         decryption = Decryption(self.recipient_key, self.sender_key)
