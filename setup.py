@@ -28,7 +28,9 @@ setup(
         'Intended Audience :: Developers',
         'Programming Language :: Python',
         'Topic :: Software Development :: Libraries :: Python Modules',
+        'Programming Language :: Python :: 2.7',
     ],
+    keywords=['webpay', 'chile', 'payments', 'transbank'],
     install_requires=[
         'requests>=2.3.0',
         'six>=1.7.3',
