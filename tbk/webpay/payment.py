@@ -32,7 +32,7 @@ class Payment(object):
                  config=None):
         self.commerce = commerce or Commerce.create_commerce(config)
         self.request_ip = request_ip
-        self.amount = amount
+        self.amount = int(amount)
         self.order_id = order_id
         self.success_url = success_url
         self.confirmation_url = confirmation_url
@@ -134,7 +134,7 @@ class Payment(object):
 
     def raw_params(self, splitter="#", include_pseudomac=True):
         params = []
-        params += ["TBK_ORDEN_COMPRA=%d" % self.order_id]
+        params += ["TBK_ORDEN_COMPRA=%s" % self.order_id]
         params += ["TBK_CODIGO_COMERCIO=%s" % self.commerce.id]
         params += ["TBK_ID_TRANSACCION=%s" % self.transaction_id()]
         uri = urlparse(self.confirmation_url)

@@ -17,8 +17,8 @@ class PaymentTest(TestCase):
             'confirmation_url': 'http://127.0.0.1:8080/webpay/confirmation/',
             'failure_url': 'http://localhost:8080/webpay/failure/',
             'session_id': 'SOME_SESSION_VALUE',
-            'amount': 123456,
-            'order_id': 1,
+            'amount': '123456',
+            'order_id': "1",
         }
 
     def test_initialize_with_all_args(self):
@@ -28,7 +28,7 @@ class PaymentTest(TestCase):
         payment = Payment(**self.payment_kwargs)
         self.assertEqual(payment.commerce, self.payment_kwargs['commerce'])
         self.assertEqual(payment.request_ip, self.payment_kwargs['request_ip'])
-        self.assertEqual(payment.amount, self.payment_kwargs['amount'])
+        self.assertEqual(payment.amount, int(self.payment_kwargs['amount']))
         self.assertEqual(payment.order_id, self.payment_kwargs['order_id'])
         self.assertEqual(
             payment.success_url, self.payment_kwargs['success_url'])
