@@ -25,6 +25,7 @@ class Confirmation(object):
         self.commerce = commerce
         self.request_ip = request_ip
         self.params = self.parse(data['TBK_PARAM'])
+        logger.confirmation(self)
 
     def parse(self, tbk_param):
         decrypted_params, signature = self.commerce.webpay_decrypt(tbk_param)
@@ -33,7 +34,6 @@ class Confirmation(object):
             index = line.find('=')
             params[line[:index]] = line[index + 1:]
         params['TBK_MAC'] = signature
-        logger.confirmation(self)
         return params
 
     def is_success(self):
@@ -66,7 +66,15 @@ class Confirmation(object):
         santiago_dt = santiago.localize(datetime.datetime(today.year, m, d, h, i, s))
 
         return santiago_dt
-    
+
     @property
     def amount(self):
         return int(self.params['TBK_MONTO']) / 100
+
+    @property
+    def transaction_id(self):
+        return int(self.params['TBK_ID_TRANSACCION'])
+
+    @property
+    def order_id(self):
+        return self.params['TBK_ORDEN_COMPRA']
