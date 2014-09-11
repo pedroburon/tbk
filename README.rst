@@ -17,7 +17,7 @@ Usage
 
     payment = Payment(
         request_ip='123.123.123.123',
-        commerce=mock.Mock(),
+        commerce=commerce,
         success_url='http://localhost:8080/webpay/success/',
         confirmation_url='http://127.0.0.1:8080/webpay/confirmation/',
         failure_url='http://localhost:8080/webpay/failure/',
@@ -26,13 +26,31 @@ Usage
         order_id=1,
     )
     payment.redirect_url()
+    
+    
+Then to confirm payment, use an endpoint with:
+
+::
+
+    def confirmation(request):
+        conf = Confirmation(
+            commerce=commerce,
+            request_ip=request.ip_address,
+            data=request.POST
+        )
+        
+        if validate_confirmation(conf) or not conf.is_success() :
+            return HttpResponse(conf.reject)
+        
+        return HttpResponse(conf.acknowledge)
+
 
 More info at http://github.com/sagmor/tbk
 
 TODO: 
 
-* *Fetch token* - Ready!
-* Confirmation 
+* *Fetch token* - Done!
+* *Confirmation* - Done! 
 * Logging
 
 About webpay communication protocol:
