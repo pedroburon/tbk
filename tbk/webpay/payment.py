@@ -124,8 +124,6 @@ class Payment(object):
         confirmation_uri = urlparse(self.confirmation_url)
         if re.match('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', confirmation_uri.hostname) is None:
             raise PaymentError("Confirmation URL host MUST be an IP address")
-        if confirmation_uri.port not in (80, 8080):
-            raise PaymentError("Confirmation URL port MUST be 80 or 8080")
 
     def transaction_id(self):
         if not self._transaction_id:

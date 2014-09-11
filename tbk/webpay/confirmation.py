@@ -40,7 +40,7 @@ class Confirmation(object):
         return self.params['TBK_RESPUESTA'] == '0'
 
     @property
-    def aknowledge(self):
+    def acknowledge(self):
         return self.commerce.webpay_encrypt('ACK')
 
     @property
@@ -66,3 +66,7 @@ class Confirmation(object):
         santiago_dt = santiago.localize(datetime.datetime(today.year, m, d, h, i, s))
 
         return santiago_dt
+    
+    @property
+    def amount(self):
+        return int(self.params['TBK_MONTO']) / 100

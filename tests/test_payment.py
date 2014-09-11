@@ -77,6 +77,15 @@ class PaymentTest(TestCase):
         payment = Payment(**self.payment_kwargs)
 
         self.assertIsNone(payment.session_id)
+    
+    def test_initialize_with_float_amount(self):
+        """
+        Creating Payment with float amount convert it to int
+        """
+        self.payment_kwargs['amount'] = 1234.56
+        payment = Payment(**self.payment_kwargs)
+        
+        self.assertEqual(1234, payment.amount)
 
     @mock.patch('tbk.webpay.payment.Payment.process_url')
     @mock.patch('tbk.webpay.payment.Payment.token')
@@ -502,14 +511,5 @@ class PaymentTest(TestCase):
 
         self.assertRaisesRegexp(
             PaymentError, "Confirmation URL host MUST be an IP address",
-            payment.verify
-        )
-
-    def test_verify_no_confirmation_port_in_80_8080(self):
-        payment = Payment(**self.payment_kwargs)
-        payment.confirmation_url = "http://123.123.123.123:8000"
-
-        self.assertRaisesRegexp(
-            PaymentError, "Confirmation URL port MUST be 80 or 8080",
             payment.verify
         )

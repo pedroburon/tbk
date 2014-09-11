@@ -104,7 +104,7 @@ class ConfirmationTest(TestCase):
             self.assertFalse(confirmation.is_success())
 
     @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
-    def test_aknowledge(self, parse):
+    def test_acknowledge(self, parse):
         commerce = mock.Mock()
         request_ip = "123.123.123.123"
         data = {
@@ -112,7 +112,7 @@ class ConfirmationTest(TestCase):
         }
         confirmation = Confirmation(commerce, request_ip, data)
 
-        self.assertEqual(confirmation.aknowledge, commerce.webpay_encrypt.return_value)
+        self.assertEqual(confirmation.acknowledge, commerce.webpay_encrypt.return_value)
         commerce.webpay_encrypt.assert_called_once_with("ACK")
 
     @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
@@ -170,3 +170,17 @@ class ConfirmationTest(TestCase):
         }
         confirmation = Confirmation(commerce, request_ip, data)
         self.assertEqual(santiago_dt, confirmation.paid_at)
+
+    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
+    def test_amount(self, parse):
+        commerce = mock.Mock()
+        request_ip = "123.123.123.123"
+        data = {
+            'TBK_PARAM': mock.Mock()
+        }
+        parse.return_value = {
+            'TBK_MONTO': '1234500',
+        }
+        confirmation = Confirmation(commerce, request_ip, data)    
+    
+        self.assertEqual(12345, confirmation.amount)
