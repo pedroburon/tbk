@@ -22,13 +22,18 @@ setup(
     long_description=long_description,
     author='Pedro Buron',
     author_email='pedroburonv@gmail.com',
+    maintainer='Pedro Buron',
+    maintainer_email='pedroburonv@gmail.com',
     url='http://github.com/pedroburon/tbk',
     classifiers=[
-        'Development Status :: 1 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Programming Language :: Python',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Programming Language :: Python :: 2.7',
+        'Environment :: Console',
+        'Environment :: Web Environment',
+        'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
     ],
     keywords=['webpay', 'chile', 'payments', 'transbank'],
     install_requires=[
@@ -43,5 +48,6 @@ setup(
     ],
     packages=find_packages(),
     test_suite='nose.collector',
-    zip_safe=True
+    zip_safe=True,
+    license='GPLv2'
 )

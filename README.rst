@@ -1,7 +1,7 @@
-tbk
-===
+tbk - Transbank's Webpay protocol
+=================================
 
-|Build Status| |Coverage Status|
+**Attention: Beta not ready for production**
 
 Python implementation of Transbank's Webpay protocol. A port from ruby
 implementation http://github.com/sagmor/tbk.
@@ -9,6 +9,10 @@ implementation http://github.com/sagmor/tbk.
 .. raw:: html
 
    <!-- split here -->
+
+
+|Build Status| |Coverage Status|
+
 
 Usage
 -----
@@ -65,17 +69,9 @@ Then to confirm payment, use an endpoint with:
 
 More info at http://github.com/sagmor/tbk
 
-TODO: 
 
-* *Fetch token* - Done!
-* *Confirmation* - Done! 
-* Logging
-
-About webpay communication protocol:
-http://sagmor.com/rants/technical/webpay-communication-protocol/
-
-Install for development
------------------------
+Development
+-----------
 
 After cloning the repo:
 
@@ -95,6 +91,20 @@ Recommended:
 
     pip install nosy
     nosy
+
+
+**TODO**
+
+* *Fetch token* - Done!
+* *Confirmation* - Done! 
+* Logging
+
+About webpay communication protocol:
+http://sagmor.com/rants/technical/webpay-communication-protocol/
+
+
+
+
 
 .. |Build Status| image:: https://travis-ci.org/pedroburon/tbk.svg
    :target: https://travis-ci.org/pedroburon/tbk
