@@ -4,7 +4,8 @@ from unittest import TestCase
 
 import mock
 
-from tbk.webpay import Payment, TBK_VERSION_KCC, PaymentError
+from tbk.webpay import TBK_VERSION_KCC
+from tbk.webpay.payment import Payment, PaymentError
 
 
 class PaymentTest(TestCase):
@@ -45,19 +46,7 @@ class PaymentTest(TestCase):
         del self.payment_kwargs['commerce']
         payment = Payment(**self.payment_kwargs)
         self.assertEqual(payment.commerce, create_commerce.return_value)
-        create_commerce.assert_called_once_with(None)
-
-    @mock.patch('tbk.webpay.payment.Commerce.create_commerce')
-    def test_initialize_without_commerce_but_config(self, create_commerce):
-        """
-        Create Payment and it uses commerce from create_commerce with config
-        """
-        config = mock.Mock()
-        del self.payment_kwargs['commerce']
-        self.payment_kwargs['config'] = config
-        payment = Payment(**self.payment_kwargs)
-        self.assertEqual(payment.commerce, create_commerce.return_value)
-        create_commerce.assert_called_once_with(config)
+        create_commerce.assert_called_once_with()
 
     def test_initialize_without_failure_url(self):
         """
@@ -77,14 +66,14 @@ class PaymentTest(TestCase):
         payment = Payment(**self.payment_kwargs)
 
         self.assertIsNone(payment.session_id)
-    
+
     def test_initialize_with_float_amount(self):
         """
         Creating Payment with float amount convert it to int
         """
         self.payment_kwargs['amount'] = 1234.56
         payment = Payment(**self.payment_kwargs)
-        
+
         self.assertEqual(1234, payment.amount)
 
     @mock.patch('tbk.webpay.payment.Payment.process_url')

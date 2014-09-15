@@ -8,7 +8,7 @@ import datetime
 import mock
 import pytz
 
-from tbk.webpay import Confirmation
+from tbk.webpay.confirmation import Confirmation
 
 
 CONFIRMATION_DATA = {

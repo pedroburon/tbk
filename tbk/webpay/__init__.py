@@ -1,5 +1,2 @@
 
-from .config import Config, TBK_VERSION_KCC # noqa
-from .commerce import Commerce # noqa
-from .payment import Payment, PaymentError # noqa
-from .confirmation import Confirmation # noqa
+TBK_VERSION_KCC = '6.0'

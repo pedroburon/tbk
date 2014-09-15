@@ -9,7 +9,7 @@ import requests
 
 from .commerce import Commerce
 from .logging import logger
-from .config import TBK_VERSION_KCC
+from . import TBK_VERSION_KCC
 
 __all__ = ['Payment', 'PaymentError']
 
@@ -28,9 +28,8 @@ class Payment(object):
 
     def __init__(self, request_ip, amount,
                  order_id, success_url, confirmation_url,
-                 session_id=None, failure_url=None, commerce=None,
-                 config=None):
-        self.commerce = commerce or Commerce.create_commerce(config)
+                 session_id=None, failure_url=None, commerce=None,):
+        self.commerce = commerce or Commerce.create_commerce()
         self.request_ip = request_ip
         self.amount = int(amount)
         self.order_id = order_id
