@@ -13,7 +13,23 @@ implementation http://github.com/sagmor/tbk.
 Usage
 -----
 
+Set environment variable for Commerce and initialize.
+
 ::
+
+    os.environ['TBK_COMMERCE_ID'] = "597026007976"
+    os.environ['TBK_COMMERCE_KEY'] = "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAn3HzPC1ZBzCO3edUCf/XJiwj3bzJpjjTi/zBO9O+DDzZCaMp...""
+
+    from tbk.webpay.commerce import Commerce        
+    commerce = Commerce.create_commerce()
+
+
+Create a new payment and redirect user.
+
+::
+
+    
+    from tbk.webpay.payment import Payment
 
     payment = Payment(
         request_ip='123.123.123.123',
@@ -31,6 +47,8 @@ Usage
 Then to confirm payment, use an endpoint with:
 
 ::
+
+    from tbk.webpay.confirmation import Confirmation
 
     def confirmation(request):
         conf = Confirmation(
