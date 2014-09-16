@@ -1,6 +1,7 @@
 # encoding=UTF-8
 from __future__ import unicode_literals
 
+import decimal
 import datetime
 
 import pytz
@@ -69,7 +70,7 @@ class Confirmation(object):
 
     @property
     def amount(self):
-        return int(self.params['TBK_MONTO']) / 100
+        return decimal.Decimal(self.params['TBK_MONTO']) / 100
 
     @property
     def transaction_id(self):

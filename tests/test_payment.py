@@ -1,5 +1,6 @@
 import os
 import sys
+from decimal import Decimal, ROUND_DOWN
 from unittest import TestCase
 
 import mock
@@ -26,10 +27,11 @@ class PaymentTest(TestCase):
         """
         Create Payment with all it's args
         """
+        amount = Decimal(self.payment_kwargs['amount']).quantize(Decimal('.01'), rounding=ROUND_DOWN)
         payment = Payment(**self.payment_kwargs)
         self.assertEqual(payment.commerce, self.payment_kwargs['commerce'])
         self.assertEqual(payment.request_ip, self.payment_kwargs['request_ip'])
-        self.assertEqual(payment.amount, int(self.payment_kwargs['amount']))
+        self.assertEqual(payment.amount, amount)
         self.assertEqual(payment.order_id, self.payment_kwargs['order_id'])
         self.assertEqual(
             payment.success_url, self.payment_kwargs['success_url'])
@@ -69,12 +71,21 @@ class PaymentTest(TestCase):
 
     def test_initialize_with_float_amount(self):
         """
-        Creating Payment with float amount convert it to int
+        Creating Payment with float amount convert it to Decimal
         """
         self.payment_kwargs['amount'] = 1234.56
         payment = Payment(**self.payment_kwargs)
 
-        self.assertEqual(1234, payment.amount)
+        self.assertEqual(Decimal("1234.56"), payment.amount)
+
+    def test_quantize_amount(self):
+        """
+        Creating Payment with float amount convert it to Decimal quantized
+        """
+        self.payment_kwargs['amount'] = 1234.567
+        payment = Payment(**self.payment_kwargs)
+
+        self.assertEqual(Decimal("1234.56"), payment.amount)
 
     @mock.patch('tbk.webpay.payment.Payment.process_url')
     @mock.patch('tbk.webpay.payment.Payment.token')
@@ -454,13 +465,13 @@ class PaymentTest(TestCase):
             PaymentError, "Invalid amount None",
             payment.verify
         )
-        payment.amount = 0
+        payment.amount = Decimal("0")
         self.assertRaisesRegexp(
             PaymentError, "Invalid amount 0",
             payment.verify
         )
 
-        payment.amount = -1000
+        payment.amount = Decimal("-1000")
 
         self.assertRaisesRegexp(
             PaymentError, "Invalid amount -100",

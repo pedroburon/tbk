@@ -2,6 +2,7 @@ import sys
 import random
 import hashlib
 import re
+import decimal
 
 from six.moves.urllib.parse import urlparse
 
@@ -31,12 +32,15 @@ class Payment(object):
                  session_id=None, failure_url=None, commerce=None,):
         self.commerce = commerce or Commerce.create_commerce()
         self.request_ip = request_ip
-        self.amount = int(amount)
+        self.amount = self.__get_amount(amount)
         self.order_id = order_id
         self.success_url = success_url
         self.confirmation_url = confirmation_url
         self.session_id = session_id
         self.failure_url = failure_url or success_url
+
+    def __get_amount(self, amount):
+        return decimal.Decimal(str(amount)).quantize(decimal.Decimal('.01'), rounding=decimal.ROUND_DOWN)
 
     @property
     def redirect_url(self):

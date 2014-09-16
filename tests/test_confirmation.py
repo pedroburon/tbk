@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import os
 from unittest import TestCase
 import datetime
+from decimal import Decimal
 
 import mock
 import pytz
@@ -188,7 +189,37 @@ class ConfirmationTest(TestCase):
         }
         confirmation = Confirmation(commerce, request_ip, data)
 
-        self.assertEqual(12345, confirmation.amount)
+        self.assertEqual(Decimal("12345.00"), confirmation.amount)
+
+    @mock.patch('tbk.webpay.confirmation.logger')
+    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
+    def test_amount_decimals(self, parse, logger):
+        commerce = mock.Mock()
+        request_ip = "123.123.123.123"
+        data = {
+            'TBK_PARAM': mock.Mock()
+        }
+        parse.return_value = {
+            'TBK_MONTO': '1234567',
+        }
+        confirmation = Confirmation(commerce, request_ip, data)
+
+        self.assertEqual(Decimal("12345.67"), confirmation.amount)
+
+    @mock.patch('tbk.webpay.confirmation.logger')
+    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
+    def test_amount_us_dollars(self, parse, logger):
+        commerce = mock.Mock()
+        request_ip = "123.123.123.123"
+        data = {
+            'TBK_PARAM': mock.Mock()
+        }
+        parse.return_value = {
+            'TBK_MONTO': '1234512',
+        }
+        confirmation = Confirmation(commerce, request_ip, data)
+
+        self.assertEqual(Decimal("12345.12"), confirmation.amount)
 
     @mock.patch('tbk.webpay.confirmation.logger')
     @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
