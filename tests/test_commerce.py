@@ -164,3 +164,10 @@ class CommerceTest(TestCase):
             key = commerce.get_webpay_key()
 
             self.assertEqual(expected_key, key)
+
+    def test_get_public_key(self):
+        private_key = RSA.generate(2048)
+        commerce_key = private_key.exportKey()
+        commerce = Commerce(id="12345", key=commerce_key)
+
+        self.assertEqual(private_key.publickey().exportKey(), commerce.get_public_key())
