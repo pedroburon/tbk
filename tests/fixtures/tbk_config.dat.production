@@ -1,0 +1,16 @@
+IDCOMERCIO = 597026007977
+MEDCOM = 1
+TBK_KEY_ID = 101
+PARAMVERIFCOM = 1
+URLCGICOM = /prodwebpay/result
+SERVERCOM = 54.198.45.70
+PORTCOM = 80
+WHITELISTCOM = ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz 0123456789./:=&?_
+HOST = 54.198.45.70
+WPORT = 80
+URLCGITRA = /filtroUnificado/bp_revision.cgi
+URLCGIMEDTRA = /filtroUnificado/bp_validacion.cgi
+SERVERTRA = https://webpay.transbank.cl
+PORTTRA = 443
+PREFIJO_CONF_TR = HTML_
+HTML_TR_NORMAL = http://127.0.0.1/notify

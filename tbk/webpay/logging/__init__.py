@@ -2,7 +2,6 @@ import os
 import datetime
 
 import pytz
-from six.moves.urllib.parse import urlparse
 
 __all__ = ['logger', 'BaseHandler', 'NullHandler']
 
@@ -63,15 +62,6 @@ class Logger(object):
             token=payment.token(),
             webpay_server=self.get_webpay_server(payment.commerce)
         )
-        response_uri = urlparse(payment.confirmation_url)
-        self.handler.configuration_payment(
-            commerce_id=payment.commerce.id,
-            server_ip=response_uri.hostname,
-            server_port=response_uri.port,
-            response_path=response_uri.path,
-            webpay_server=self.get_webpay_server(payment.commerce),
-            webpay_server_port=self.get_webpay_port(payment.commerce)
-        )
 
     def confirmation(self, confirmation):
         santiago = pytz.timezone('America/Santiago')
@@ -92,9 +82,6 @@ class Logger(object):
 
     def get_webpay_server(self, commerce):
         return 'https://certificacion.webpay.cl' if commerce.testing else 'https://webpay.transbank.cl'
-
-    def get_webpay_port(self, commerce):
-        return '6443' if commerce.testing else '433'
 
 logger = Logger(NullHandler())
 

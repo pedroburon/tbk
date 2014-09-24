@@ -171,3 +171,23 @@ class CommerceTest(TestCase):
         commerce = Commerce(id="12345", key=commerce_key)
 
         self.assertEqual(private_key.publickey().exportKey(), commerce.get_public_key())
+
+    def test_get_config_tbk_testing(self):
+        config_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'tbk_config.dat.testing')
+        with open(config_path, 'r') as config_file:
+            expected = config_file.read()
+
+        commerce = Commerce(testing=True)
+
+        self.assertEqual(expected,
+                         commerce.get_config_tbk(confirmation_url="http://54.198.45.69:8080/webpay/confirmation"))
+
+    def test_get_config_tbk_production(self):
+        config_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'tbk_config.dat.production')
+        with open(config_path, 'r') as config_file:
+            expected = config_file.read()
+
+        commerce = Commerce(id="597026007977", key=Commerce.TEST_COMMERCE_KEY, testing=False)
+
+        self.assertEqual(expected,
+                         commerce.get_config_tbk(confirmation_url="http://54.198.45.70:80/prodwebpay/result"))
