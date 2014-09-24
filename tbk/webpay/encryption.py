@@ -1,4 +1,5 @@
 import base64
+import binascii
 
 from Crypto import Random
 from Crypto.Hash import SHA512
@@ -66,7 +67,7 @@ class Decryption(object):
         message = self.get_message(decrypted_message)
 
         if self.verify(signature, message):
-            return message, signature
+            return message, binascii.hexlify(signature)
 
         raise InvalidMessageException("Invalid message signature")
 

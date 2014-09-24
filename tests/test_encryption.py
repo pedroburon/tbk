@@ -126,18 +126,20 @@ class DecryptionTest(TestCase):
         self.assertEqual(self.sender_key, decryption.sender_key)
         self.assertEqual(self.recipient_key, decryption.recipient_key)
 
+    @mock.patch('tbk.webpay.encryption.binascii.hexlify')
     @mock.patch('tbk.webpay.encryption.Decryption.get_iv')
     @mock.patch('tbk.webpay.encryption.Decryption.get_key')
     @mock.patch('tbk.webpay.encryption.Decryption.get_decrypted_message')
     @mock.patch('tbk.webpay.encryption.Decryption.get_signature')
     @mock.patch('tbk.webpay.encryption.Decryption.get_message')
     @mock.patch('tbk.webpay.encryption.Decryption.verify')
-    def test_decrypt(self, verify, get_message, get_signature, get_decrypted_message, get_key, get_iv):
+    def test_decrypt(self, verify, get_message, get_signature, get_decrypted_message, get_key, get_iv, hexlify):
         decryption = Decryption(self.recipient_key, self.sender_key)
         raw = Random.new().read(2000)
         encrypted = base64.b64encode(raw)
         message = get_message.return_value
         signature = get_signature.return_value
+        hexlify_signature = hexlify.return_value
         decrypted_message = get_decrypted_message.return_value
         iv = get_iv.return_value
         key = get_key.return_value
@@ -146,13 +148,14 @@ class DecryptionTest(TestCase):
         returned_message, returned_signature = decryption.decrypt(encrypted)
 
         self.assertEqual(message, returned_message)
-        self.assertEqual(signature, returned_signature)
+        self.assertEqual(hexlify_signature, returned_signature)
         get_message.assert_called_once_with(decrypted_message)
         get_decrypted_message.assert_called_once_with(iv, key, raw)
         get_iv.assert_called_once_with(raw)
         get_key.assert_called_once_with(raw)
         get_signature.assert_called_once_with(decrypted_message)
         verify.assert_called_once_with(signature, message)
+        hexlify.assert_called_once_with(signature)
 
     @mock.patch('tbk.webpay.encryption.Decryption.get_iv')
     @mock.patch('tbk.webpay.encryption.Decryption.get_key')
