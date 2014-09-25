@@ -1,36 +1,96 @@
+# encoding=UTF-8
+from __future__ import unicode_literals
+
+import os
+import datetime
+from contextlib import closing
+
+import pytz
+
+
+def event_payment_format(**kwargs):
+    return PAYMENT_FORMAT.format(**kwargs)
+
+
+def event_confirmation_format(**kwargs):
+    return CONFIRMATION_FORMAT.format(**kwargs)
+
+
+def log_confirmation_format(**kwargs):
+    return BITACORA_FORMAT % kwargs
+
+
+EVENTS_LOG_FILE_NAME_FORMAT = "TBK_EVN%s.log"
+EVENTS_LOG_FILE_DATE_FORMAT = "%Y%m%d"
+BITACORA_LOG_FILE_NAME_FORMAT = "tbk_bitacora_TR_NORMAL_%s.log"
+BITACORA_LOG_FILE_DATE_FORMAT = "%m%d"
+
+
+class WebpayOfficialHandler(object):
+
+    def __init__(self, path=None):
+        self.path = path
+
+    def event_payment(self, **kwargs):
+        with closing(self.events_log_file) as events_log_file:
+            events_log_file.write(event_payment_format(**kwargs))
+
+    def event_confirmation(self, **kwargs):
+        with closing(self.events_log_file) as events_log_file:
+            events_log_file.write(event_confirmation_format(**kwargs))
+
+    def log_confirmation(self, params, commerce_id):
+        format_params = {'commerce_id': commerce_id}
+        format_params.update(**params)
+        with closing(self.bitacora_log_file) as bitacora_log_file:
+            bitacora_log_file.write(log_confirmation_format(**format_params))
+
+    @property
+    def events_log_file(self):
+        return self.log_file(EVENTS_LOG_FILE_NAME_FORMAT, EVENTS_LOG_FILE_DATE_FORMAT)
+
+    @property
+    def bitacora_log_file(self):
+        return self.log_file(BITACORA_LOG_FILE_NAME_FORMAT, BITACORA_LOG_FILE_DATE_FORMAT)
+
+    def log_file(self, log_file_name_format, log_file_date_format):
+        santiago = pytz.timezone('America/Santiago')
+        now = santiago.localize(datetime.datetime.now())
+        file_name = log_file_name_format % now.strftime(log_file_date_format)
+        return open(os.path.join(self.path, file_name), 'a+')
 
 
 PAYMENT_FORMAT = (
-    "          ;{pid:>12d}; ;Filtro    ;Inicio                                  ;{date:<14s};{time:<6s};{request_ip:<15s};OK ;                    ;Inicio de filtrado\n"  # noqa
-    "          ;{pid:>12d}; ;Filtro    ;tbk_param.txt                           ;{date:<14s};{time:<6s};{request_ip:<15s};OK ;                    ;Archivo parseado\n"  # noqa
-    "          ;{pid:>12d}; ;Filtro    ;Terminado                               ;{date:<14s};{time:<6s};{request_ip:<15s};OK ;                    ;Datos Filtrados con exito\n"  # noqa
-    "{transaction_id:<10d};{pid:>12d}; ;pago      ;inicio                                  ;{date:<14s};{time:<6s};{request_ip:<15s};OK ;{commerce_id:<20d};Parseo realizado\n"  # noqa
-    "{transaction_id:<10d};{pid:>12d}; ;pago      ;{webpay_server:<40s};{date:<14s};{time:<6s};{request_ip:<15s};OK ;{commerce_id:<20d};Datos en datos/tbk_config.dat\n"  # noqa
-    "{transaction_id:<10d};{pid:>12d}; ;pago      ;{webpay_server:<40s};{date:<14s};{time:<6s};{request_ip:<15s};OK ;{commerce_id:<20d};Mac generado\n"  # noqa
-    "{transaction_id:<10d};{pid:>12d}; ;pago      ;{webpay_server:<40s};{date:<14s};{time:<6s};{request_ip:<15s};OK ;{commerce_id:<20d};Construccion TBK_PARAM\n"  # noqa
-    "{transaction_id:<10d};{pid:>12d}; ;pago      ;{webpay_server:<40s};{date:<14s};{time:<6s};{request_ip:<15s};OK ;{commerce_id:<20d};TBK_PARAM encriptado\n"  # noqa
-    "{transaction_id:<10d};{pid:>12d}; ;pago      ;{webpay_server:<40s};{date:<14s};{time:<6s};{request_ip:<15s};OK ;{commerce_id:<20d};Datos listos para ser enviados\n"  # noqa
-    "{transaction_id:<10d};{pid:>12d}; ;pago      ;{webpay_server:<40s};{date:<14s};{time:<6s};{request_ip:<15s};OK ;{commerce_id:<20d};Medio 1: Transaccion segura\n"  # noqa
-    "{transaction_id:<10d};{pid:>12d}; ;pago      ;{webpay_server:<40s};{date:<14s};{time:<6s};{request_ip:<15s};OK ;{commerce_id:<20d};Datos validados\n"  # noqa
-    "{transaction_id:<10d};{pid:>12d}; ;pago      ;{webpay_server:<40s};{date:<14s};{time:<6s};{request_ip:<15s};OK ;{commerce_id:<20d};Token={token:s}\n"  # noqa
-    "{transaction_id:<10d};{pid:>12d}; ;pago      ;{webpay_server:<40s};{date:<14s};{time:<6s};{request_ip:<15s};OK ;{commerce_id:<20d};Redireccion web\n"  # noqa
-    "{transaction_id:<10d};{pid:>12d}; ;pago      ;{webpay_server:<40s};{date:<14s};{time:<6s};{request_ip:<15s};OK ;{commerce_id:<20d};Todo OK\n"  # noqa
+    "          ;{pid:>12}; ;Filtro    ;Inicio                                  ;{date:<14};{time:<6};{request_ip:<15};OK ;                    ;Inicio de filtrado\n"  # noqa
+    "          ;{pid:>12}; ;Filtro    ;tbk_param.txt                           ;{date:<14};{time:<6};{request_ip:<15};OK ;                    ;Archivo parseado\n"  # noqa
+    "          ;{pid:>12}; ;Filtro    ;Terminado                               ;{date:<14};{time:<6};{request_ip:<15};OK ;                    ;Datos Filtrados con exito\n"  # noqa
+    "{transaction_id:<10};{pid:>12}; ;pago      ;inicio                                  ;{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Parseo realizado\n"  # noqa
+    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Datos en datos/tbk_config.dat\n"  # noqa
+    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Mac generado\n"  # noqa
+    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Construccion TBK_PARAM\n"  # noqa
+    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};TBK_PARAM encriptado\n"  # noqa
+    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Datos listos para ser enviados\n"  # noqa
+    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Medio 1: Transaccion segura\n"  # noqa
+    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Datos validados\n"  # noqa
+    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Token={token:}\n"  # noqa
+    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Redireccion web\n"  # noqa
+    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Todo OK\n"  # noqa
 )
 
 CONFIRMATION_FORMAT = (
-    "          ;{pid:>12d};   ;resultado ;Desencriptando                          ;%{date:<14s};{time:<6s};{request_ip:<15s};OK ;                    ;TBK_PARAM desencriptado\n"  # noqa
-    "          ;{pid:>12d};   ;resultado ;Validacion                              ;%{date:<14s};{time:<6s};{request_ip:<15s};OK ;                    ;Entidad emisora de los datos validada\n"  # noqa
-    "          ;{pid:>12d};   ;resultado ;{order_id:<40s};%{date:<14s};{time:<6s};{request_ip:<15s};OK ;                    ;Parseo de los datos\n"  # noqa
-    "          ;{pid:>12d};   ;resultado ;{order_id:<40s};%{date:<14s};{time:<6s};{request_ip:<15s};OK ;                    ;http://127.0.0.1/webpay/notify\n"  # noqa
-    "{transaction_id:<10d};{pid:>12d};   ;transacc  ;{transaction_id:<40d};%{date:<14s};{time:<6s};{request_ip:<15s};OK ;{commerce_id:<20d};conectandose al port :(80)\n"  # noqa
-    "{transaction_id:<10d};{pid:>12d};   ;resultado ;logro abrir_conexion                    ;%{date:<14s};{time:<6s};{request_ip:<15s}; 0 ;{commerce_id:<20d};Abrio socket para conex-com\n"  # noqa
-    "{transaction_id:<10d};{pid:>12d};   ;transacc  ;{transaction_id:<40d};%{date:<14s};{time:<6s};{request_ip:<15s};OK ;{commerce_id:<20d};POST a url http://127.0.0.1/webpay/notify\n"  # noqa
-    "{transaction_id:<10d};{pid:>12d};   ;transacc  ;{transaction_id:<40d};%{date:<14s};{time:<6s};{request_ip:<15s};OK ;{commerce_id:<20d};mensaje enviado\n"  # noqa
-    "          ;{pid:>12d};   ;check_mac ;                                        ;%{date:<14s};{time:<6s};EMPTY          ;OK ;                    ;Todo OK\n"  # noqa
-    "{transaction_id:<10d};{pid:>12d};   ;transacc  ;{transaction_id:<40d};%{date:<14s};{time:<6s};{request_ip:<15s};OK ;{commerce_id:<20d};Llego ACK del Comercio\n"  # noqa
-    "{transaction_id:<10d};{pid:>12d};   ;resultado ;{order_id:<40s};%{date:<14s};{time:<6s};{request_ip:<15s};OK ;{commerce_id:<20d};tienda acepto transaccion\n"  # noqa
-    "{transaction_id:<10d};{pid:>12d};   ;resultado ;{order_id:<40s};%{date:<14s};{time:<6s};{request_ip:<15s};OK ;{commerce_id:<20d};respuesta enviada a TBK (ACK)\n"  # noqa
-    "{transaction_id:<10d};{pid:>12d};   ;resultado ;{order_id:<40s};%{date:<14s};{time:<6s};{request_ip:<15s};OK ;{commerce_id:<20d};Todo OK\n"  # noqa
+    "          ;{pid:>12};   ;resultado ;Desencriptando                          ;%{date:<14};{time:<6};{request_ip:<15};OK ;                    ;TBK_PARAM desencriptado\n"  # noqa
+    "          ;{pid:>12};   ;resultado ;Validacion                              ;%{date:<14};{time:<6};{request_ip:<15};OK ;                    ;Entidad emisora de los datos validada\n"  # noqa
+    "          ;{pid:>12};   ;resultado ;{order_id:<40};%{date:<14};{time:<6};{request_ip:<15};OK ;                    ;Parseo de los datos\n"  # noqa
+    "          ;{pid:>12};   ;resultado ;{order_id:<40};%{date:<14};{time:<6};{request_ip:<15};OK ;                    ;http://127.0.0.1/webpay/notify\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};%{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};conectandose al port :(80)\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;resultado ;logro abrir_conexion                    ;%{date:<14};{time:<6};{request_ip:<15}; 0 ;{commerce_id:<20};Abrio socket para conex-com\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};%{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};POST a url http://127.0.0.1/webpay/notify\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};%{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};mensaje enviado\n"  # noqa
+    "          ;{pid:>12};   ;check_mac ;                                        ;%{date:<14};{time:<6};EMPTY          ;OK ;                    ;Todo OK\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};%{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Llego ACK del Comercio\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;resultado ;{order_id:<40};%{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};tienda acepto transaccion\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;resultado ;{order_id:<40};%{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};respuesta enviada a TBK (ACK)\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;resultado ;{order_id:<40};%{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Todo OK\n"  # noqa
 )
 
 BITACORA_FORMAT = (
@@ -48,26 +108,7 @@ BITACORA_FORMAT = (
     "TBK_ID_SESION=%{TBK_ID_SESION}s; "
     "TBK_ID_TRANSACCION=%{TBK_ID_TRANSACCION}s; "
     "TBK_TIPO_PAGO=%{TBK_TIPO_PAGO}s; "
-    "TBK_NUMERO_CUOTAS=%{TBK_NUMERO_CUOTAS}s; "
+    "TBK_NUMERO_CUOTAS=%{TBK_NUMERO_CUOTA}s; "
     "TBK_VCI=%{TBK_VCI}s; "
     "TBK_MAC=%{TBK_MAC}s\n"
 )
-
-
-class WebpayOfficialHandler(object):
-
-    def __init__(self, path=None):
-        self.path = path
-        self.events_log_file = None
-        self.bitacora_log_file = None
-
-    def event_payment(self, **kwargs):
-        self.events_log_file.write(PAYMENT_FORMAT.format(**kwargs))
-
-    def event_confirmation(self, **kwargs):
-        self.events_log_file.write(CONFIRMATION_FORMAT.format(**kwargs))
-
-    def log_confirmation(self, params, commerce_id):
-        format_params = {'commerce_id': commerce_id}
-        format_params.update(**params)
-        self.bitacora_log_file.write(BITACORA_FORMAT % format_params)

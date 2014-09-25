@@ -57,7 +57,7 @@ class Logger(object):
             time=now.strftime(LOG_TIME_FORMAT),
             pid=os.getpid(),
             commerce_id=payment.commerce.id,
-            transaction_id=payment.transaction_id,
+            transaction_id=payment.transaction_id(),
             request_ip=payment.request_ip,
             token=payment.token(),
             webpay_server=self.get_webpay_server(payment.commerce)
