@@ -27,6 +27,14 @@ Set environment variable for Commerce and initialize.
     from tbk.webpay.commerce import Commerce        
     commerce = Commerce.create_commerce()
 
+If you want to set the official webpay log (for certification issues):
+
+::
+
+    from tbk.webpay.logging import configure_logger
+    from tbk.webpay.logging.official import WebpayOfficialHandler
+
+    configure_logger(WebpayOfficialHandler(LOG_BASE_PATH))
 
 Create a new payment and redirect user.
 
@@ -92,12 +100,6 @@ Recommended:
     pip install nosy
     nosy
 
-
-**TODO**
-
-* *Fetch token* - Done!
-* *Confirmation* - Done! 
-* Logging
 
 About webpay communication protocol:
 http://sagmor.com/rants/technical/webpay-communication-protocol/
