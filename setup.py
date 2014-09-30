@@ -13,12 +13,12 @@ def read_file(filename):
     except IOError:
         return ''
 
-long_description = read_file('README.md').strip().split('split here', 1)[0]
+long_description = read_file('README.rst').strip().split('split here', 1)[0]
 
 setup(
     name='tbk',
     version=__import__('tbk').__version__,
-    description=' '.join(__import__('tbk').__doc__.splitlines()).strip(),
+    description=__import__('tbk').__doc__.strip(),
     long_description=long_description,
     author='Pedro Buron',
     author_email='pedroburonv@gmail.com',

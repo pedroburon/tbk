@@ -6,12 +6,15 @@ tbk - Transbank's Webpay protocol
 Python implementation of Transbank's Webpay protocol. A port from ruby
 implementation http://github.com/sagmor/tbk.
 
-.. raw:: html
-
-   <!-- split here -->
-
 
 |Build Status| |Coverage Status|
+
+Installation
+------------
+
+::
+
+    pip install tbk
 
 
 Usage
@@ -77,6 +80,7 @@ Then to confirm payment, use an endpoint with:
 
 More info at http://github.com/sagmor/tbk
 
+.. split here
 
 Development
 -----------
