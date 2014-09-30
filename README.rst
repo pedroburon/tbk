@@ -53,7 +53,7 @@ Create a new payment and redirect user.
         amount=123456,
         order_id=1,
     )
-    payment.redirect_url()
+    payment.redirect_url
     
     
 Then to confirm payment, use an endpoint with:
