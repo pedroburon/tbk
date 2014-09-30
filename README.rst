@@ -9,6 +9,13 @@ implementation http://github.com/sagmor/tbk.
 
 |Build Status| |Coverage Status|
 
+
+.. |Build Status| image:: https://travis-ci.org/pedroburon/tbk.svg
+   :target: https://travis-ci.org/pedroburon/tbk
+.. |Coverage Status| image:: https://img.shields.io/coveralls/pedroburon/tbk.svg
+   :target: https://coveralls.io/r/pedroburon/tbk
+
+
 Installation
 ------------
 
@@ -42,7 +49,6 @@ If you want to set the official webpay log (for certification issues):
 Create a new payment and redirect user.
 
 ::
-
     
     from tbk.webpay.payment import Payment
 
@@ -78,7 +84,7 @@ Then to confirm payment, use an endpoint with:
         return HttpResponse(conf.acknowledge)
 
 
-More info at http://github.com/sagmor/tbk
+About webpay communication protocol: http://sagmor.com/rants/technical/webpay-communication-protocol/
 
 .. split here
 
@@ -104,15 +110,3 @@ Recommended:
     pip install nosy
     nosy
 
-
-About webpay communication protocol:
-http://sagmor.com/rants/technical/webpay-communication-protocol/
-
-
-
-
-
-.. |Build Status| image:: https://travis-ci.org/pedroburon/tbk.svg
-   :target: https://travis-ci.org/pedroburon/tbk
-.. |Coverage Status| image:: https://img.shields.io/coveralls/pedroburon/tbk.svg
-   :target: https://coveralls.io/r/pedroburon/tbk
