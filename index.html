@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Tbk by pedroburon</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Tbk</h1>
+        <p>Python implementation of Transbank&#39;s Webpay protocol</p>
+
+        <p class="view"><a href="https://github.com/pedroburon/tbk">View the Project on GitHub <small>pedroburon/tbk</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/pedroburon/tbk/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/pedroburon/tbk/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/pedroburon/tbk">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a name="tbk---transbanks-webpay-protocol" class="anchor" href="#tbk---transbanks-webpay-protocol"><span class="octicon octicon-link"></span></a>tbk - Transbank's Webpay protocol</h1>
+
+<p><strong>Attention: Beta not ready for production</strong></p>
+
+<p>Python implementation of Transbank's Webpay protocol. A port from ruby
+implementation <a href="http://github.com/sagmor/tbk">http://github.com/sagmor/tbk</a>.</p>
+
+<p><a href="https://travis-ci.org/pedroburon/tbk"><img src="https://travis-ci.org/pedroburon/tbk.svg" alt="Build
+Status"></a>
+<a href="https://coveralls.io/r/pedroburon/tbk"><img src="https://img.shields.io/coveralls/pedroburon/tbk.svg" alt="Coverage
+Status"></a></p>
+
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>Set environment variable for Commerce and initialize.</p>
+
+<pre><code>os.environ['TBK_COMMERCE_ID'] = "597026007976"
+os.environ['TBK_COMMERCE_KEY'] = "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAn3HzPC1ZBzCO3edUCf/XJiwj3bzJpjjTi/zBO9O+DDzZCaMp...""
+
+from tbk.webpay.commerce import Commerce        
+commerce = Commerce.create_commerce()
+</code></pre>
+
+<p>If you want to set the official webpay log (for certification issues):</p>
+
+<pre><code>from tbk.webpay.logging import configure_logger
+from tbk.webpay.logging.official import WebpayOfficialHandler
+
+configure_logger(WebpayOfficialHandler(LOG_BASE_PATH))
+</code></pre>
+
+<p>Create a new payment and redirect user.</p>
+
+<pre><code>from tbk.webpay.payment import Payment
+
+payment = Payment(
+    request_ip='123.123.123.123',
+    commerce=commerce,
+    success_url='http://localhost:8080/webpay/success/',
+    confirmation_url='http://127.0.0.1:8080/webpay/confirmation/',
+    failure_url='http://localhost:8080/webpay/failure/',
+    session_id='SOME_SESSION_VALUE',
+    amount=123456,
+    order_id=1,
+)
+payment.redirect_url
+</code></pre>
+
+<p>Then to confirm payment, use an endpoint with:</p>
+
+<pre><code>from tbk.webpay.confirmation import Confirmation
+
+def confirmation(request):
+    conf = Confirmation(
+        commerce=commerce,
+        request_ip=request.ip_address,
+        data=request.POST
+    )
+
+    if validate_confirmation(conf) or not conf.is_success() :
+        return HttpResponse(conf.reject)
+
+    return HttpResponse(conf.acknowledge)
+</code></pre>
+
+<p>More info at <a href="http://github.com/sagmor/tbk">http://github.com/sagmor/tbk</a></p>
+
+<h2>
+<a name="development" class="anchor" href="#development"><span class="octicon octicon-link"></span></a>Development</h2>
+
+<p>After cloning the repo:</p>
+
+<pre><code>python setup.py develop
+</code></pre>
+
+<p>For testing purposes:</p>
+
+<pre><code>python setup.py test
+</code></pre>
+
+<p>Recommended:</p>
+
+<pre><code>pip install nosy
+nosy
+</code></pre>
+
+<p>About webpay communication protocol:
+&lt;<a href="http://sagmor.com/rants/technical/webpay-communication-protocol/">http://sagmor.com/rants/technical/webpay-communication-protocol/</a></p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/pedroburon">pedroburon</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
