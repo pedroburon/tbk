@@ -78,19 +78,19 @@ PAYMENT_FORMAT = (
 )
 
 CONFIRMATION_FORMAT = (
-    "          ;{pid:>12};   ;resultado ;Desencriptando                          ;%{date:<14};{time:<6};{request_ip:<15};OK ;                    ;TBK_PARAM desencriptado\n"  # noqa
-    "          ;{pid:>12};   ;resultado ;Validacion                              ;%{date:<14};{time:<6};{request_ip:<15};OK ;                    ;Entidad emisora de los datos validada\n"  # noqa
-    "          ;{pid:>12};   ;resultado ;{order_id:<40};%{date:<14};{time:<6};{request_ip:<15};OK ;                    ;Parseo de los datos\n"  # noqa
-    "          ;{pid:>12};   ;resultado ;{order_id:<40};%{date:<14};{time:<6};{request_ip:<15};OK ;                    ;http://127.0.0.1/webpay/notify\n"  # noqa
-    "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};%{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};conectandose al port :(80)\n"  # noqa
-    "{transaction_id:<10};{pid:>12};   ;resultado ;logro abrir_conexion                    ;%{date:<14};{time:<6};{request_ip:<15}; 0 ;{commerce_id:<20};Abrio socket para conex-com\n"  # noqa
-    "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};%{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};POST a url http://127.0.0.1/webpay/notify\n"  # noqa
-    "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};%{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};mensaje enviado\n"  # noqa
-    "          ;{pid:>12};   ;check_mac ;                                        ;%{date:<14};{time:<6};EMPTY          ;OK ;                    ;Todo OK\n"  # noqa
-    "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};%{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Llego ACK del Comercio\n"  # noqa
-    "{transaction_id:<10};{pid:>12};   ;resultado ;{order_id:<40};%{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};tienda acepto transaccion\n"  # noqa
-    "{transaction_id:<10};{pid:>12};   ;resultado ;{order_id:<40};%{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};respuesta enviada a TBK (ACK)\n"  # noqa
-    "{transaction_id:<10};{pid:>12};   ;resultado ;{order_id:<40};%{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Todo OK\n"  # noqa
+    "          ;{pid:>12};   ;resultado ;Desencriptando                          ;{date:<14};{time:<6};{request_ip:<15};OK ;                    ;TBK_PARAM desencriptado\n"  # noqa
+    "          ;{pid:>12};   ;resultado ;Validacion                              ;{date:<14};{time:<6};{request_ip:<15};OK ;                    ;Entidad emisora de los datos validada\n"  # noqa
+    "          ;{pid:>12};   ;resultado ;{order_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;                    ;Parseo de los datos\n"  # noqa
+    "          ;{pid:>12};   ;resultado ;{order_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;                    ;http://127.0.0.1/webpay/notify\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};conectandose al port :(80)\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;resultado ;logro abrir_conexion                    ;{date:<14};{time:<6};{request_ip:<15}; 0 ;{commerce_id:<20};Abrio socket para conex-com\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};POST a url http://127.0.0.1/webpay/notify\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};mensaje enviado\n"  # noqa
+    "          ;{pid:>12};   ;check_mac ;                                        ;{date:<14};{time:<6};EMPTY          ;OK ;                    ;Todo OK\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Llego ACK del Comercio\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;resultado ;{order_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};tienda acepto transaccion\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;resultado ;{order_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};respuesta enviada a TBK (ACK)\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;resultado ;{order_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Todo OK\n"  # noqa
 )
 
 BITACORA_FORMAT = (
