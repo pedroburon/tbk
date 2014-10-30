@@ -35,7 +35,10 @@ Set environment variable for Commerce and initialize.
     os.environ['TBK_COMMERCE_KEY'] = "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAn3HzPC1ZBzCO3edUCf/XJiwj3bzJpjjTi/zBO9O+DDzZCaMp...""
 
     from tbk.webpay.commerce import Commerce        
+
     commerce = Commerce.create_commerce()
+    # for development purposes you can use
+    # commerce = Commerce(testing=True)
 
 If you want to set the official webpay log (for certification issues):
 
@@ -78,10 +81,11 @@ Then to confirm payment, use an endpoint with:
             data=request.POST
         )
         
-        if validate_confirmation(conf) or not conf.is_success() :
-            return HttpResponse(conf.reject)
-        
-        return HttpResponse(conf.acknowledge)
+        # validate_confirmation validate if order_id and amount are valid.        
+        if conf.is_success() and validate_confirmation(conf):
+            return HttpResponse(commerce.acknowledge)
+
+        return HttpResponse(commerce.reject)
 
 
 About webpay communication protocol: http://sagmor.com/rants/technical/webpay-communication-protocol/
