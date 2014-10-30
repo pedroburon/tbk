@@ -47,7 +47,8 @@ class ConfirmationTest(TestCase):
         self.assertEqual(request_ip, confirmation.request_ip)
         parse.assert_called_once_with(data['TBK_PARAM'])
         ConfirmationPayload.assert_called_once_with(parse.return_value)
-        self.assertEqual(ConfirmationPayload.return_value, confirmation.payload)
+        self.assertEqual(
+            ConfirmationPayload.return_value, confirmation.payload)
 
     def test_init_wo_tbk_param(self):
         commerce = mock.Mock()
@@ -74,7 +75,8 @@ class ConfirmationTest(TestCase):
 
         commerce.webpay_decrypt.assert_called_once_with(data['TBK_PARAM'])
         ConfirmationPayload.assert_called_once_with(params)
-        self.assertEqual(ConfirmationPayload.return_value, confirmation.payload)
+        self.assertEqual(
+            ConfirmationPayload.return_value, confirmation.payload)
 
     @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
     @mock.patch('tbk.webpay.confirmation.logger')
@@ -111,8 +113,39 @@ class ConfirmationTest(TestCase):
             confirmation = Confirmation(commerce, request_ip, data)
             self.assertFalse(confirmation.is_success())
 
+    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
+    @mock.patch('tbk.webpay.confirmation.logger')
+    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
+    def test_order_id(self, parse, logger, ConfirmationPayload):
+        commerce = mock.Mock()
+        request_ip = "123.123.123.123"
+        data = {
+            'TBK_PARAM': mock.Mock()
+        }
+        payload = ConfirmationPayload.return_value
+
+        confirmation = Confirmation(commerce, request_ip, data)
+
+        self.assertEqual(payload.order_id, confirmation.order_id)
+
+    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
+    @mock.patch('tbk.webpay.confirmation.logger')
+    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
+    def test_amount(self, parse, logger, ConfirmationPayload):
+        commerce = mock.Mock()
+        request_ip = "123.123.123.123"
+        data = {
+            'TBK_PARAM': mock.Mock()
+        }
+        payload = ConfirmationPayload.return_value
+
+        confirmation = Confirmation(commerce, request_ip, data)
+
+        self.assertEqual(payload.amount, confirmation.amount)
+
 
 class ConfirmationPayloadTest(TestCase):
+
     def test_payload(self):
         payload = ConfirmationPayload(CONFIRMATION_DATA)
 
@@ -203,7 +236,8 @@ class ConfirmationPayloadTest(TestCase):
     def test_accountable_date(self):
         santiago = pytz.timezone('America/Santiago')
         today = datetime.date.today()
-        today = santiago.localize(datetime.datetime(today.year, today.month, today.day))
+        today = santiago.localize(
+            datetime.datetime(today.year, today.month, today.day))
         self.assert_attribute(
             today,
             'accountable_date',

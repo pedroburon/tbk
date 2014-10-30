@@ -131,41 +131,45 @@ class Confirmation(object):
         return self.payload.response == self.payload.SUCCESS_RESPONSE_CODE
 
     @property
+    def amount(self):
+        return self.payload.amount
+
+    @property
+    def order_id(self):
+        return self.payload.order_id
+
+    @property
     def acknowledge(self):  # pragma: no cover
-        warnings.warn("Deprecated for commerce.acknowledge attribute.", DeprecationWarning)
+        warnings.warn(
+            "Deprecated for commerce.acknowledge attribute.", DeprecationWarning)
         return self.commerce.acknowledge
 
     @property
     def reject(self):  # pragma: no cover
-        warnings.warn("Deprecated for commerce.reject attribute.", DeprecationWarning)
+        warnings.warn(
+            "Deprecated for commerce.reject attribute.", DeprecationWarning)
         return self.commerce.reject
 
     @property
     def message(self):  # pragma: no cover
-        warnings.warn("Deprecated for payload.message attribute.", DeprecationWarning)
+        warnings.warn(
+            "Deprecated for payload.message attribute.", DeprecationWarning)
         return self.payload.message
 
     @property
     def paid_at(self):  # pragma: no cover
-        warnings.warn("Deprecated for payload.paid_at attribute.", DeprecationWarning)
+        warnings.warn(
+            "Deprecated for payload.paid_at attribute.", DeprecationWarning)
         return self.payload.paid_at
 
     @property
-    def amount(self):  # pragma: no cover
-        warnings.warn("Deprecated for payload.amount attribute.", DeprecationWarning)
-        return self.payload.amount
-
-    @property
     def transaction_id(self):  # pragma: no cover
-        warnings.warn("Deprecated for payload.transaction_id attribute.", DeprecationWarning)
+        warnings.warn(
+            "Deprecated for payload.transaction_id attribute.", DeprecationWarning)
         return self.payload.transaction_id
 
     @property
-    def order_id(self):  # pragma: no cover
-        warnings.warn("Deprecated for payload.order_id attribute.", DeprecationWarning)
-        return self.payload.order_id
-
-    @property
     def params(self):  # pragma: no cover
-        warnings.warn("Deprecated for payload.data attribute.", DeprecationWarning)
+        warnings.warn(
+            "Deprecated for payload.data attribute.", DeprecationWarning)
         return self.payload.data
