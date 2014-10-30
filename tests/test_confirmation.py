@@ -9,7 +9,7 @@ from decimal import Decimal
 import mock
 import pytz
 
-from tbk.webpay.confirmation import Confirmation
+from tbk.webpay.confirmation import Confirmation, ConfirmationPayload
 
 
 CONFIRMATION_DATA = {
@@ -32,8 +32,9 @@ CONFIRMATION_DATA = {
 
 class ConfirmationTest(TestCase):
 
+    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
     @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
-    def test_init(self, parse):
+    def test_init(self, parse, ConfirmationPayload):
         commerce = mock.Mock()
         request_ip = "123.123.123.123"
         data = {
@@ -44,8 +45,9 @@ class ConfirmationTest(TestCase):
 
         self.assertEqual(commerce, confirmation.commerce)
         self.assertEqual(request_ip, confirmation.request_ip)
-        self.assertEqual(parse.return_value, confirmation.params)
         parse.assert_called_once_with(data['TBK_PARAM'])
+        ConfirmationPayload.assert_called_once_with(parse.return_value)
+        self.assertEqual(ConfirmationPayload.return_value, confirmation.payload)
 
     def test_init_wo_tbk_param(self):
         commerce = mock.Mock()
@@ -54,8 +56,8 @@ class ConfirmationTest(TestCase):
 
         self.assertRaises(KeyError, Confirmation, commerce, request_ip, data)
 
-    # @mock.patch('tbk.webpay.confirmation.logger')
-    def test_parse(self):
+    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
+    def test_parse(self, ConfirmationPayload):
         with open(os.path.join(os.path.dirname(__file__), 'fixtures', 'confirmation.txt')) as f:
             confirmation_data = f.read()
         data = {
@@ -70,13 +72,14 @@ class ConfirmationTest(TestCase):
         params = CONFIRMATION_DATA.copy()
         params['TBK_MAC'] = "signature"
 
-        self.assertEqual(params, confirmation.params)
         commerce.webpay_decrypt.assert_called_once_with(data['TBK_PARAM'])
-        # logger.confirmation.assert_called_once_with(confirmation)
+        ConfirmationPayload.assert_called_once_with(params)
+        self.assertEqual(ConfirmationPayload.return_value, confirmation.payload)
 
+    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
     @mock.patch('tbk.webpay.confirmation.logger')
     @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
-    def test_is_success(self, parse, logger):
+    def test_is_success(self, parse, logger, ConfirmationPayload):
         parse.return_value = {
             'TBK_RESPUESTA': '0',
         }
@@ -85,59 +88,37 @@ class ConfirmationTest(TestCase):
         data = {
             'TBK_PARAM': mock.Mock()
         }
+        payload = ConfirmationPayload.return_value
+        payload.response = payload.SUCCESS_RESPONSE_CODE
 
         confirmation = Confirmation(commerce, request_ip, data)
 
         self.assertTrue(confirmation.is_success())
 
+    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
     @mock.patch('tbk.webpay.confirmation.logger')
     @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
-    def test_is_success_respuesta_not_0(self, parse, logger):
+    def test_is_success_respuesta_not_0(self, parse, logger, ConfirmationPayload):
         commerce = mock.Mock()
         request_ip = "123.123.123.123"
         data = {
             'TBK_PARAM': mock.Mock()
         }
+        payload = ConfirmationPayload.return_value
 
         for i in range(1, 10):
-            parse.return_value = {
-                'TBK_RESPUESTA': str(-i),
-            }
+            payload.response = -i
             confirmation = Confirmation(commerce, request_ip, data)
             self.assertFalse(confirmation.is_success())
 
-    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
-    def test_acknowledge(self, parse):
-        commerce = mock.Mock()
-        request_ip = "123.123.123.123"
-        data = {
-            'TBK_PARAM': mock.Mock()
-        }
-        confirmation = Confirmation(commerce, request_ip, data)
 
-        self.assertEqual(confirmation.acknowledge, commerce.webpay_encrypt.return_value)
-        commerce.webpay_encrypt.assert_called_once_with("ACK")
+class ConfirmationPayloadTest(TestCase):
+    def test_payload(self):
+        payload = ConfirmationPayload(CONFIRMATION_DATA)
 
-    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
-    def test_reject(self, parse):
-        commerce = mock.Mock()
-        request_ip = "123.123.123.123"
-        data = {
-            'TBK_PARAM': mock.Mock()
-        }
-        confirmation = Confirmation(commerce, request_ip, data)
+        self.assertEqual(payload.data, CONFIRMATION_DATA)
 
-        self.assertEqual(confirmation.reject, commerce.webpay_encrypt.return_value)
-        commerce.webpay_encrypt.assert_called_once_with("ERR")
-
-    @mock.patch('tbk.webpay.confirmation.logger')
-    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
-    def test_messages(self, parse, logger):
-        commerce = mock.Mock()
-        request_ip = "123.123.123.123"
-        data = {
-            'TBK_PARAM': mock.Mock()
-        }
+    def test_messages(self):
         RESPONSE_CODES = {
             '0': 'Transacción aprobada.',
             '-1': 'Rechazo de tx. en B24, No autorizada',
@@ -149,104 +130,148 @@ class ConfirmationTest(TestCase):
             '-7': 'Excede límite diario por transacción.',
             '-8': 'Rubro no autorizado.'
         }
-
         for i in RESPONSE_CODES.keys():
-            parse.return_value = {
-                'TBK_RESPUESTA': str(i),
-            }
-            confirmation = Confirmation(commerce, request_ip, data)
-            self.assertEqual(RESPONSE_CODES[i], confirmation.message)
+            self.assert_attribute(
+                RESPONSE_CODES[i],
+                'message',
+                TBK_RESPUESTA=str(i)
+            )
 
-    @mock.patch('tbk.webpay.confirmation.logger')
-    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
-    def test_paid_at(self, parse, logger):
+    def test_response(self):
+        for i in range(0, -9):
+            self.assert_attribute(
+                i,
+                'response',
+                TBK_RESPUESTA=str(i)
+            )
+
+    def test_paid_at(self):
         santiago = pytz.timezone('America/Santiago')
         today = santiago.localize(datetime.datetime.today())
-        santiago_dt = santiago.localize(datetime.datetime(today.year, 1, 23, 15, 9, 59))
+        today = today - datetime.timedelta(microseconds=today.microsecond)
+        self.assert_attribute(
+            today,
+            'paid_at',
+            TBK_FECHA_TRANSACCION=today.strftime("%m%d"),
+            TBK_HORA_TRANSACCION=today.strftime("%H%M%S"),
+        )
 
-        commerce = mock.Mock()
-        request_ip = "123.123.123.123"
-        data = {
-            'TBK_PARAM': mock.Mock()
-        }
-        parse.return_value = {
-            'TBK_FECHA_TRANSACCION': '0123',
-            'TBK_HORA_TRANSACCION': '150959',
-        }
-        confirmation = Confirmation(commerce, request_ip, data)
-        self.assertEqual(santiago_dt, confirmation.paid_at)
+    def test_amount(self):
+        self.assert_attribute(
+            Decimal("12345.00"),
+            'amount',
+            TBK_MONTO='1234500'
+        )
 
-    @mock.patch('tbk.webpay.confirmation.logger')
-    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
-    def test_amount(self, parse, logger):
-        commerce = mock.Mock()
-        request_ip = "123.123.123.123"
-        data = {
-            'TBK_PARAM': mock.Mock()
-        }
-        parse.return_value = {
-            'TBK_MONTO': '1234500',
-        }
-        confirmation = Confirmation(commerce, request_ip, data)
+    def test_amount_decimals(self):
+        self.assert_attribute(
+            Decimal("12345.67"),
+            'amount',
+            TBK_MONTO='1234567'
+        )
 
-        self.assertEqual(Decimal("12345.00"), confirmation.amount)
+    def test_transaction_id(self):
+        transaction_id = 1234500
+        self.assert_attribute(
+            transaction_id,
+            'transaction_id',
+            TBK_ID_TRANSACCION=str(transaction_id)
+        )
 
-    @mock.patch('tbk.webpay.confirmation.logger')
-    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
-    def test_amount_decimals(self, parse, logger):
-        commerce = mock.Mock()
-        request_ip = "123.123.123.123"
-        data = {
-            'TBK_PARAM': mock.Mock()
-        }
-        parse.return_value = {
-            'TBK_MONTO': '1234567',
-        }
-        confirmation = Confirmation(commerce, request_ip, data)
+    def test_order_id(self):
+        orden_compra = '123aSd4500'
+        self.assert_attribute(
+            orden_compra,
+            'order_id',
+            TBK_ORDEN_COMPRA=orden_compra
+        )
 
-        self.assertEqual(Decimal("12345.67"), confirmation.amount)
+    def test_credit_card_number(self):
+        self.assert_attribute(
+            'XXXX-XXXX-XXXX-9509', 'credit_card_number',
+            TBK_FINAL_NUMERO_TARJETA='9509'
+        )
 
-    @mock.patch('tbk.webpay.confirmation.logger')
-    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
-    def test_amount_us_dollars(self, parse, logger):
-        commerce = mock.Mock()
-        request_ip = "123.123.123.123"
-        data = {
-            'TBK_PARAM': mock.Mock()
-        }
-        parse.return_value = {
-            'TBK_MONTO': '1234512',
-        }
-        confirmation = Confirmation(commerce, request_ip, data)
+    def test_authorization_code(self):
+        authorization_code = '000123456'
+        self.assert_attribute(
+            authorization_code,
+            'authorization_code',
+            TBK_CODIGO_AUTORIZACION=authorization_code
+        )
 
-        self.assertEqual(Decimal("12345.12"), confirmation.amount)
+    def test_accountable_date(self):
+        santiago = pytz.timezone('America/Santiago')
+        today = datetime.date.today()
+        today = santiago.localize(datetime.datetime(today.year, today.month, today.day))
+        self.assert_attribute(
+            today,
+            'accountable_date',
+            TBK_FECHA_CONTABLE=today.strftime("%m%d"),
+            TBK_FECHA_TRANSACCION=today.strftime("%m%d"),
+            TBK_HORA_TRANSACCION=today.strftime("%H%M%S"),
+        )
 
-    @mock.patch('tbk.webpay.confirmation.logger')
-    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
-    def test_transaction_id(self, parse, logger):
-        commerce = mock.Mock()
-        request_ip = "123.123.123.123"
-        data = {
-            'TBK_PARAM': mock.Mock()
-        }
-        parse.return_value = {
-            'TBK_ID_TRANSACCION': '1234500',
-        }
-        confirmation = Confirmation(commerce, request_ip, data)
+    def test_accountable_date_next_year(self):
+        santiago = pytz.timezone('America/Santiago')
+        transaction_date = datetime.datetime(2014, 12, 31, 11, 59, 59)
+        accountable_date = datetime.datetime(2015, 01, 02)
+        expected = santiago.localize(accountable_date)
+        self.assert_attribute(
+            expected,
+            'accountable_date',
+            TBK_FECHA_CONTABLE=accountable_date.strftime("%m%d"),
+            TBK_FECHA_TRANSACCION=transaction_date.strftime("%m%d"),
+            TBK_HORA_TRANSACCION=transaction_date.strftime("%H%M%S"),
+        )
 
-        self.assertEqual(1234500, confirmation.transaction_id)
+    def test_session_id(self):
+        session_id = 'asdb1234asdQwe'
+        self.assert_attribute(
+            session_id,
+            'session_id',
+            TBK_ID_SESION=session_id
+        )
 
-    @mock.patch('tbk.webpay.confirmation.logger')
-    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
-    def test_order_id(self, parse, logger):
-        commerce = mock.Mock()
-        request_ip = "123.123.123.123"
-        data = {
-            'TBK_PARAM': mock.Mock()
-        }
-        parse.return_value = {
-            'TBK_ORDEN_COMPRA': '123asd4500',
-        }
-        confirmation = Confirmation(commerce, request_ip, data)
+    def test_session_id_null(self):
+        self.assert_attribute(
+            None,
+            'session_id',
+            TBK_ID_SESION="null"
+        )
 
-        self.assertEqual('123asd4500', confirmation.order_id)
+    def test_installments(self):
+        for i in range(42):
+            self.assert_attribute(
+                i,
+                'installments',
+                TBK_NUMERO_CUOTAS=str(i)
+            )
+
+    def test_payment_type_code(self):
+        for code in ("VN", "VC", "SI", "S2", "CI"):
+            self.assert_attribute(
+                code,
+                'payment_type_code',
+                TBK_TIPO_PAGO=code
+            )
+
+    def test_payment_type(self):
+        PAYMENT_TYPES = {
+            "VN": "Venta Normal",
+            "VC": "Venta Cuotas",
+            "SI": "Tres Cuotas Sin Interés",
+            "S2": "Dos Cuotas Sin Interés",
+            "CI": "Cuotas Comercio"
+        }
+        for code in PAYMENT_TYPES.keys():
+            self.assert_attribute(
+                PAYMENT_TYPES[code],
+                'payment_type',
+                TBK_TIPO_PAGO=code
+            )
+
+    def assert_attribute(self, expected, attribute, **data):
+        payload = ConfirmationPayload(data)
+
+        self.assertEqual(expected, getattr(payload, attribute))

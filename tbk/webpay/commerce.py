@@ -170,3 +170,11 @@ class Commerce(object):
                              confirmation_port=confirmation_uri.port,
                              webpay_port=webpay_port,
                              webpay_server=webpay_server)
+
+    @property
+    def acknowledge(self):
+        return self.webpay_encrypt('ACK')
+
+    @property
+    def reject(self):
+        return self.webpay_encrypt('ERR')

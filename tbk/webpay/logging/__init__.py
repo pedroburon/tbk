@@ -22,7 +22,7 @@ class BaseHandler(object):
     def event_confirmation(self, date, time, pid, commerce_id, transaction_id, request_ip, order_id):
         raise NotImplementedError("Logging Handler must implement event_confirmation")
 
-    def log_confirmation(self, params, commerce_id):
+    def log_confirmation(self, payload, commerce_id):
         raise NotImplementedError("Logging Handler must implement log_confirmation")
 
 
@@ -76,7 +76,7 @@ class Logger(object):
             order_id=confirmation.order_id,
         )
         self.handler.log_confirmation(
-            params=confirmation.params,
+            payload=confirmation.payload,
             commerce_id=confirmation.commerce.id
         )
 

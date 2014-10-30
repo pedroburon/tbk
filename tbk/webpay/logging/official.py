@@ -39,9 +39,9 @@ class WebpayOfficialHandler(object):
         with closing(self.events_log_file) as events_log_file:
             events_log_file.write(event_confirmation_format(**kwargs))
 
-    def log_confirmation(self, params, commerce_id):
+    def log_confirmation(self, payload, commerce_id):
         format_params = {'commerce_id': commerce_id}
-        format_params.update(**params)
+        format_params.update(**payload.data)
         with closing(self.bitacora_log_file) as bitacora_log_file:
             bitacora_log_file.write(log_confirmation_format(**format_params))
 

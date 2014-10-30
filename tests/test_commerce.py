@@ -191,3 +191,17 @@ class CommerceTest(TestCase):
 
         self.assertEqual(expected,
                          commerce.get_config_tbk(confirmation_url="http://54.198.45.70:80/prodwebpay/result"))
+
+    @mock.patch('tbk.webpay.commerce.Commerce.webpay_encrypt')
+    def test_acknowledge(self, webpay_encrypt):
+        commerce = Commerce(id="597026007977", key=Commerce.TEST_COMMERCE_KEY, testing=False)
+
+        self.assertEqual(webpay_encrypt.return_value, commerce.acknowledge)
+        webpay_encrypt.assert_called_once_with('ACK')
+
+    @mock.patch('tbk.webpay.commerce.Commerce.webpay_encrypt')
+    def test_reject(self, webpay_encrypt):
+        commerce = Commerce(id="597026007977", key=Commerce.TEST_COMMERCE_KEY, testing=False)
+
+        self.assertEqual(webpay_encrypt.return_value, commerce.reject)
+        webpay_encrypt.assert_called_once_with('ERR')
