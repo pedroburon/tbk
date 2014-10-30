@@ -72,8 +72,12 @@ class ConfirmationPayload(object):
         return int(self.data['TBK_RESPUESTA'])
 
     @property
+    def credit_card_last_digits(self):
+        return self.data['TBK_FINAL_NUMERO_TARJETA']
+
+    @property
     def credit_card_number(self):
-        return "XXXX-XXXX-XXXX-{last_digits}".format(last_digits=self.data['TBK_FINAL_NUMERO_TARJETA'])
+        return "XXXX-XXXX-XXXX-{last_digits}".format(last_digits=self.credit_card_last_digits)
 
     @property
     def authorization_code(self):
@@ -108,6 +112,9 @@ class ConfirmationPayload(object):
     @property
     def payment_type_code(self):
         return self.data['TBK_TIPO_PAGO']
+
+    def __getitem__(self, key):
+        return self.data[key]
 
 
 class Confirmation(object):

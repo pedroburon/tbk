@@ -15,10 +15,6 @@ class BaseHandler(object):
     def event_payment(self, date, time, pid, commerce_id, transaction_id, request_ip, token, webpay_server):
         raise NotImplementedError("Logging Handler must implement event_payment")
 
-    def configuration_payment(self, commerce_id, server_ip, server_port,
-                              response_path, webpay_server, webpay_server_port):
-        raise NotImplementedError("Logging Handler must implement configuration_payment")
-
     def event_confirmation(self, date, time, pid, commerce_id, transaction_id, request_ip, order_id):
         raise NotImplementedError("Logging Handler must implement event_confirmation")
 
@@ -29,9 +25,6 @@ class BaseHandler(object):
 class NullHandler(BaseHandler):
 
     def event_payment(self, **kwargs):
-        pass
-
-    def configuration_payment(self, **kwargs):
         pass
 
     def event_confirmation(self, **kwargs):
@@ -71,7 +64,7 @@ class Logger(object):
             time=now.strftime(LOG_TIME_FORMAT),
             pid=os.getpid(),
             commerce_id=confirmation.commerce.id,
-            transaction_id=confirmation.transaction_id,
+            transaction_id=confirmation.payload.transaction_id,
             request_ip=confirmation.request_ip,
             order_id=confirmation.order_id,
         )

@@ -17,13 +17,13 @@ def event_confirmation_format(**kwargs):
 
 
 def log_confirmation_format(**kwargs):
-    return BITACORA_FORMAT % kwargs
+    return JOURNAL_FORMAT % kwargs
 
 
 EVENTS_LOG_FILE_NAME_FORMAT = "TBK_EVN%s.log"
 EVENTS_LOG_FILE_DATE_FORMAT = "%Y%m%d"
-BITACORA_LOG_FILE_NAME_FORMAT = "tbk_bitacora_TR_NORMAL_%s.log"
-BITACORA_LOG_FILE_DATE_FORMAT = "%m%d"
+JOURNAL_LOG_FILE_NAME_FORMAT = "tbk_bitacora_TR_NORMAL_%s.log"
+JOURNAL_LOG_FILE_DATE_FORMAT = "%m%d"
 
 
 class WebpayOfficialHandler(object):
@@ -42,16 +42,16 @@ class WebpayOfficialHandler(object):
     def log_confirmation(self, payload, commerce_id):
         format_params = {'commerce_id': commerce_id}
         format_params.update(**payload.data)
-        with closing(self.bitacora_log_file) as bitacora_log_file:
-            bitacora_log_file.write(log_confirmation_format(**format_params))
+        with closing(self.journal_log_file) as journal_log_file:
+            journal_log_file.write(log_confirmation_format(**format_params))
 
     @property
     def events_log_file(self):
         return self.log_file(EVENTS_LOG_FILE_NAME_FORMAT, EVENTS_LOG_FILE_DATE_FORMAT)
 
     @property
-    def bitacora_log_file(self):
-        return self.log_file(BITACORA_LOG_FILE_NAME_FORMAT, BITACORA_LOG_FILE_DATE_FORMAT)
+    def journal_log_file(self):
+        return self.log_file(JOURNAL_LOG_FILE_NAME_FORMAT, JOURNAL_LOG_FILE_DATE_FORMAT)
 
     def log_file(self, log_file_name_format, log_file_date_format):
         santiago = pytz.timezone('America/Santiago')
@@ -93,7 +93,7 @@ CONFIRMATION_FORMAT = (
     "{transaction_id:<10};{pid:>12};   ;resultado ;{order_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Todo OK\n"  # noqa
 )
 
-BITACORA_FORMAT = (
+JOURNAL_FORMAT = (
     "ACK; "
     "TBK_ORDEN_COMPRA=%(TBK_ORDEN_COMPRA)s; "
     "TBK_CODIGO_COMERCIO=%(commerce_id)s; "
