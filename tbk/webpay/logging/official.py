@@ -61,20 +61,20 @@ class WebpayOfficialHandler(object):
 
 
 PAYMENT_FORMAT = (
-    "          ;{pid:>12}; ;Filtro    ;Inicio                                  ;{date:<14};{time:<6};{request_ip:<15};OK ;                    ;Inicio de filtrado\n"  # noqa
-    "          ;{pid:>12}; ;Filtro    ;tbk_param.txt                           ;{date:<14};{time:<6};{request_ip:<15};OK ;                    ;Archivo parseado\n"  # noqa
-    "          ;{pid:>12}; ;Filtro    ;Terminado                               ;{date:<14};{time:<6};{request_ip:<15};OK ;                    ;Datos Filtrados con exito\n"  # noqa
-    "{transaction_id:<10};{pid:>12}; ;pago      ;inicio                                  ;{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Parseo realizado\n"  # noqa
-    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Datos en datos/tbk_config.dat\n"  # noqa
-    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Mac generado\n"  # noqa
-    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Construccion TBK_PARAM\n"  # noqa
-    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};TBK_PARAM encriptado\n"  # noqa
-    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Datos listos para ser enviados\n"  # noqa
-    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Medio 1: Transaccion segura\n"  # noqa
-    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Datos validados\n"  # noqa
-    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Token={token:}\n"  # noqa
-    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Redireccion web\n"  # noqa
-    "{transaction_id:<10};{pid:>12}; ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Todo OK\n"  # noqa
+    "          ;{pid:>12};   ;Filtro    ;Inicio                                  ;{date:<14};{time:<6};{request_ip:<15};OK ;                    ;Inicio de filtrado\n"  # noqa
+    "          ;{pid:>12};   ;Filtro    ;tbk_param.txt                           ;{date:<14};{time:<6};{request_ip:<15};OK ;                    ;Archivo parseado\n"  # noqa
+    "          ;{pid:>12};   ;Filtro    ;Terminado                               ;{date:<14};{time:<6};{request_ip:<15};OK ;                    ;Datos Filtrados con exito\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;pago      ;inicio                                  ;{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Parseo realizado\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Datos en datos/tbk_config.dat\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Mac generado\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Construccion TBK_PARAM\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};TBK_PARAM encriptado\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Datos listos para ser enviados\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Medio 1: Transaccion segura\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Datos validados\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Token={token:}\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Redireccion web\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;pago      ;{webpay_server:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Todo OK\n"  # noqa
 )
 
 CONFIRMATION_FORMAT = (
