@@ -52,7 +52,7 @@ class Logger(object):
             commerce_id=payment.commerce.id,
             transaction_id=payment.transaction_id,
             request_ip=payment.request_ip,
-            token=payment.token(),
+            token=payment.token,
             webpay_server=self.get_webpay_server(payment.commerce)
         )
 
