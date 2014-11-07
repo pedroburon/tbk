@@ -40,7 +40,7 @@ class Payment(object):
         self.failure_url = failure_url or success_url
 
     def __get_amount(self, amount):
-        return decimal.Decimal(str(amount)).quantize(decimal.Decimal('.01'), rounding=decimal.ROUND_DOWN)
+        return decimal.Decimal(str(amount)).quantize(decimal.Decimal('.01'), rounding=decimal.ROUND_UP)
 
     @property
     def redirect_url(self):

@@ -85,7 +85,7 @@ class PaymentTest(TestCase):
         self.payment_kwargs['amount'] = 1234.567
         payment = Payment(**self.payment_kwargs)
 
-        self.assertEqual(Decimal("1234.56"), payment.amount)
+        self.assertEqual(Decimal("1234.57"), payment.amount)
 
     @mock.patch('tbk.webpay.payment.Payment.process_url')
     @mock.patch('tbk.webpay.payment.Payment.token')
