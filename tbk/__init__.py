@@ -1,5 +1,5 @@
 '''
-Python implementation of Transbank's Webpay protocol. A port from ruby implementation http://github.com/sagmor/tbk.
+Python implementation of Transbank's Webpay protocol.
 '''
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
