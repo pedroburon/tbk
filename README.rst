@@ -3,18 +3,27 @@ tbk - Transbank's Webpay protocol
 
 **Attention: Beta not ready for production**
 
-Python implementation of Transbank's Webpay protocol. A port from ruby
-implementation http://github.com/sagmor/tbk.
+Python implementation of Transbank's Webpay protocol.
 
 
-|Build Status| |Coverage Status|
+|Latest Version| |Development Status| |Build Status| |Coverage Status| |Downloads|
 
 
-.. |Build Status| image:: https://travis-ci.org/pedroburon/tbk.svg
+.. |Latest Version| image:: https://pypip.in/version/tbk/badge.svg?
+    :target: https://pypi.python.org/pypi/tbk/
+    :alt: Latest Version
+.. |Development Status| image:: https://pypip.in/status/tbk/badge.svg?
+   :target: https://pypi.python.org/pypi/tbk/
+   :alt: Development Status
+.. |Build Status| image:: https://travis-ci.org/pedroburon/tbk.svg?
    :target: https://travis-ci.org/pedroburon/tbk
-.. |Coverage Status| image:: https://img.shields.io/coveralls/pedroburon/tbk.svg
+   :alt: Build Status
+.. |Coverage Status| image:: https://img.shields.io/coveralls/pedroburon/tbk.svg?
    :target: https://coveralls.io/r/pedroburon/tbk
-
+   :alt: Coverage Status
+.. |Downloads| image:: https://pypip.in/download/tbk/badge.svg?period=month
+   :target: https://pypi.python.org/pypi/tbk/
+   :alt: Downloads
 
 Installation
 ------------
@@ -114,3 +123,7 @@ Recommended:
     pip install nosy
     nosy
 
+Credits
+-------
+
+This is a port from ruby implementation http://github.com/sagmor/tbk.
