@@ -296,7 +296,8 @@ class ConfirmationPayloadTest(TestCase):
             "VC": "Venta Cuotas",
             "SI": "Tres Cuotas Sin Interés",
             "S2": "Dos Cuotas Sin Interés",
-            "CI": "Cuotas Comercio"
+            "CI": "Cuotas Comercio",
+            "VD": "Redcompra",
         }
         for code in PAYMENT_TYPES.keys():
             self.assert_attribute(

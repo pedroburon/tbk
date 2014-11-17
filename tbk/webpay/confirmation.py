@@ -28,7 +28,8 @@ class ConfirmationPayload(object):
         "VC": "Venta Cuotas",
         "SI": "Tres Cuotas Sin Interés",
         "S2": "Dos Cuotas Sin Interés",
-        "CI": "Cuotas Comercio"
+        "CI": "Cuotas Comercio",
+        "VD": "Redcompra",
     }
 
     def __init__(self, data):
