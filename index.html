@@ -29,26 +29,27 @@
       </header>
       <section>
         <h1>
-<a name="tbk---transbanks-webpay-protocol" class="anchor" href="#tbk---transbanks-webpay-protocol"><span class="octicon octicon-link"></span></a>tbk - Transbank's Webpay protocol</h1>
+<a id="tbk---transbanks-webpay-protocol" class="anchor" href="#tbk---transbanks-webpay-protocol" aria-hidden="true"><span class="octicon octicon-link"></span></a>tbk - Transbank's Webpay protocol</h1>
 
 <p><strong>Attention: Beta not ready for production</strong></p>
 
-<p>Python implementation of Transbank's Webpay protocol. A port from ruby
-implementation <a href="http://github.com/sagmor/tbk">http://github.com/sagmor/tbk</a>.</p>
+<p>Python implementation of Transbank's Webpay protocol.</p>
 
-<p><a href="https://travis-ci.org/pedroburon/tbk"><img src="https://travis-ci.org/pedroburon/tbk.svg" alt="Build
-Status"></a>
-<a href="https://coveralls.io/r/pedroburon/tbk"><img src="https://img.shields.io/coveralls/pedroburon/tbk.svg" alt="Coverage
-Status"></a></p>
+<p><img src="https://pypip.in/version/tbk/badge.svg?%0A%20:target:%20https://pypi.python.org/pypi/tbk/%0A%20:alt:%20Latest%20Version" alt="Latest
+Version">
+<a href="https://pypi.python.org/pypi/tbk/"><img src="https://pypip.in/status/tbk/badge.svg?" alt="Development Status"></a>
+<a href="https://travis-ci.org/pedroburon/tbk"><img src="https://travis-ci.org/pedroburon/tbk.svg?" alt="Build Status"></a>
+<a href="https://coveralls.io/r/pedroburon/tbk"><img src="https://img.shields.io/coveralls/pedroburon/tbk.svg?" alt="Coverage Status"></a>
+<a href="https://pypi.python.org/pypi/tbk/"><img src="https://pypip.in/download/tbk/badge.svg?period=month" alt="Downloads"></a></p>
 
 <h2>
-<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
 
 <pre><code>pip install tbk
 </code></pre>
 
 <h2>
-<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
 
 <p>Set environment variable for Commerce and initialize.</p>
 
@@ -56,7 +57,10 @@ Status"></a></p>
 os.environ['TBK_COMMERCE_KEY'] = "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAn3HzPC1ZBzCO3edUCf/XJiwj3bzJpjjTi/zBO9O+DDzZCaMp...""
 
 from tbk.webpay.commerce import Commerce        
+
 commerce = Commerce.create_commerce()
+# for development purposes you can use
+# commerce = Commerce(testing=True)
 </code></pre>
 
 <p>If you want to set the official webpay log (for certification issues):</p>
@@ -95,16 +99,18 @@ def confirmation(request):
         data=request.POST
     )
 
-    if validate_confirmation(conf) or not conf.is_success() :
-        return HttpResponse(conf.reject)
+    # validate_confirmation validate if order_id and amount are valid.        
+    if conf.is_success() and validate_confirmation(conf):
+        return HttpResponse(commerce.acknowledge)
 
-    return HttpResponse(conf.acknowledge)
+    return HttpResponse(commerce.reject)
 </code></pre>
 
-<p>More info at <a href="http://github.com/sagmor/tbk">http://github.com/sagmor/tbk</a></p>
+<p>About webpay communication protocol:
+<a href="http://sagmor.com/rants/technical/webpay-communication-protocol/">http://sagmor.com/rants/technical/webpay-communication-protocol/</a></p>
 
 <h2>
-<a name="development" class="anchor" href="#development"><span class="octicon octicon-link"></span></a>Development</h2>
+<a id="development" class="anchor" href="#development" aria-hidden="true"><span class="octicon octicon-link"></span></a>Development</h2>
 
 <p>After cloning the repo:</p>
 
@@ -122,8 +128,10 @@ def confirmation(request):
 nosy
 </code></pre>
 
-<p>About webpay communication protocol:
-&lt;<a href="http://sagmor.com/rants/technical/webpay-communication-protocol/">http://sagmor.com/rants/technical/webpay-communication-protocol/</a></p>
+<h2>
+<a id="credits" class="anchor" href="#credits" aria-hidden="true"><span class="octicon octicon-link"></span></a>Credits</h2>
+
+<p>This is a port from ruby implementation <a href="http://github.com/sagmor/tbk">http://github.com/sagmor/tbk</a>.</p>
       </section>
       <footer>
         <p>This project is maintained by <a href="https://github.com/pedroburon">pedroburon</a></p>
