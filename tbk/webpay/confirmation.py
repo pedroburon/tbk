@@ -9,6 +9,8 @@ import pytz
 
 from .logging import logger
 
+from . import CONFIRMATION_TIMEOUT
+
 
 class ConfirmationPayload(object):
     RESPONSE_CODES = {
@@ -120,7 +122,9 @@ class ConfirmationPayload(object):
 
 class Confirmation(object):
 
-    def __init__(self, commerce, request_ip, data):
+    def __init__(self, commerce, request_ip, data, timeout=CONFIRMATION_TIMEOUT):
+        self.init_time = datetime.datetime.now()
+        self.timeout = timeout
         self.commerce = commerce
         self.request_ip = request_ip
         self.payload = ConfirmationPayload(self.parse(data['TBK_PARAM']))
@@ -145,6 +149,12 @@ class Confirmation(object):
     @property
     def order_id(self):
         return self.payload.order_id
+
+    def is_timeout(self):
+        lapse = datetime.datetime.now() - self.init_time
+        return lapse > datetime.timedelta(seconds=self.timeout)
+
+    # DEPRECATED
 
     @property
     def acknowledge(self):  # pragma: no cover

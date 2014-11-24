@@ -43,7 +43,7 @@ Set environment variable for Commerce and initialize.
     os.environ['TBK_COMMERCE_ID'] = "597026007976"
     os.environ['TBK_COMMERCE_KEY'] = "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAn3HzPC1ZBzCO3edUCf/XJiwj3bzJpjjTi/zBO9O+DDzZCaMp...""
 
-    from tbk.webpay.commerce import Commerce        
+    from tbk.webpay.commerce import Commerce
 
     commerce = Commerce.create_commerce()
     # for development purposes you can use
@@ -61,7 +61,7 @@ If you want to set the official webpay log (for certification issues):
 Create a new payment and redirect user.
 
 ::
-    
+
     from tbk.webpay.payment import Payment
 
     payment = Payment(
@@ -75,8 +75,8 @@ Create a new payment and redirect user.
         order_id=1,
     )
     payment.redirect_url
-    
-    
+
+
 Then to confirm payment, use an endpoint with:
 
 ::
@@ -89,9 +89,9 @@ Then to confirm payment, use an endpoint with:
             request_ip=request.ip_address,
             data=request.POST
         )
-        
-        # validate_confirmation validate if order_id and amount are valid.        
-        if conf.is_success() and validate_confirmation(conf):
+
+        # validate_confirmation validate if order_id and amount are valid.
+        if conf.is_success() and validate_confirmation(conf) and not conf.is_timeout():
             return HttpResponse(commerce.acknowledge)
 
         return HttpResponse(commerce.reject)

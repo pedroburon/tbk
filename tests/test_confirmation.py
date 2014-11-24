@@ -10,7 +10,7 @@ import mock
 import pytz
 
 from tbk.webpay.confirmation import Confirmation, ConfirmationPayload
-
+from tbk.webpay import CONFIRMATION_TIMEOUT
 
 CONFIRMATION_DATA = {
     'TBK_CODIGO_AUTORIZACION': '001882',
@@ -44,8 +44,10 @@ class ConfirmationTest(TestCase):
         }
 
         confirmation = Confirmation(self.commerce, self.request_ip, data)
+
         self.assertEqual(self.commerce, confirmation.commerce)
         self.assertEqual(self.request_ip, confirmation.request_ip)
+        self.assertEqual(CONFIRMATION_TIMEOUT, confirmation.timeout)
         parse.assert_called_once_with(data['TBK_PARAM'])
         ConfirmationPayload.assert_called_once_with(parse.return_value)
         self.assertEqual(
@@ -135,6 +137,34 @@ class ConfirmationTest(TestCase):
         confirmation = Confirmation(self.commerce, self.request_ip, data)
 
         self.assertEqual(payload.amount, confirmation.amount)
+
+    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
+    @mock.patch('tbk.webpay.confirmation.logger')
+    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
+    def test_timeout(self, parse, logger, ConfirmationPayload):
+        data = {
+            'TBK_PARAM': mock.Mock()
+        }
+        timeout = 25
+
+        confirmation = Confirmation(self.commerce, self.request_ip, data, timeout)
+        confirmation.init_time = confirmation.init_time - datetime.timedelta(seconds=timeout)
+
+        self.assertTrue(confirmation.is_timeout())
+
+    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
+    @mock.patch('tbk.webpay.confirmation.logger')
+    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
+    def test_not_timeout(self, parse, logger, ConfirmationPayload):
+        data = {
+            'TBK_PARAM': mock.Mock()
+        }
+        timeout = 20
+
+        confirmation = Confirmation(self.commerce, self.request_ip, data, timeout)
+        confirmation.init_time = confirmation.init_time + datetime.timedelta(seconds=timeout)
+
+        self.assertFalse(confirmation.is_timeout())
 
 
 class ConfirmationPayloadTest(TestCase):
