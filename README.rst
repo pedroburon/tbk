@@ -6,7 +6,7 @@ tbk - Transbank's Webpay protocol
 Python implementation of Transbank's Webpay protocol.
 
 
-|Latest Version| |Development Status| |Build Status| |Coverage Status| |Downloads|
+|Latest Version| |Development Status| |Build Status| |Coverage Status| |Code Health| |Downloads|
 
 
 .. |Latest Version| image:: https://pypip.in/version/tbk/badge.svg?
@@ -21,6 +21,9 @@ Python implementation of Transbank's Webpay protocol.
 .. |Coverage Status| image:: https://img.shields.io/coveralls/pedroburon/tbk.svg?
    :target: https://coveralls.io/r/pedroburon/tbk
    :alt: Coverage Status
+.. |Code Health| image:: https://landscape.io/github/pedroburon/tbk/master/landscape.svg?
+   :target: https://landscape.io/github/pedroburon/tbk/master
+   :alt: Code Health
 .. |Downloads| image:: https://pypip.in/download/tbk/badge.svg?period=month
    :target: https://pypi.python.org/pypi/tbk/
    :alt: Downloads
@@ -43,7 +46,7 @@ Set environment variable for Commerce and initialize.
     os.environ['TBK_COMMERCE_ID'] = "597026007976"
     os.environ['TBK_COMMERCE_KEY'] = "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAn3HzPC1ZBzCO3edUCf/XJiwj3bzJpjjTi/zBO9O+DDzZCaMp...""
 
-    from tbk.webpay.commerce import Commerce        
+    from tbk.webpay.commerce import Commerce
 
     commerce = Commerce.create_commerce()
     # for development purposes you can use
@@ -61,7 +64,7 @@ If you want to set the official webpay log (for certification issues):
 Create a new payment and redirect user.
 
 ::
-    
+
     from tbk.webpay.payment import Payment
 
     payment = Payment(
@@ -75,8 +78,8 @@ Create a new payment and redirect user.
         order_id=1,
     )
     payment.redirect_url
-    
-    
+
+
 Then to confirm payment, use an endpoint with:
 
 ::
@@ -89,9 +92,9 @@ Then to confirm payment, use an endpoint with:
             request_ip=request.ip_address,
             data=request.POST
         )
-        
-        # validate_confirmation validate if order_id and amount are valid.        
-        if conf.is_success() and validate_confirmation(conf):
+
+        # validate_confirmation validate if order_id and amount are valid.
+        if conf.is_success() and validate_confirmation(conf) and not conf.is_timeout():
             return HttpResponse(commerce.acknowledge)
 
         return HttpResponse(commerce.reject)
