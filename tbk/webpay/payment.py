@@ -22,6 +22,24 @@ USER_AGENT = "TBK/%(TBK_VERSION_KCC)s (Python/%(PYTHON_VERSION)s)" % {
 }
 
 
+def get_token_from_body(body):
+    TOKEN = 'TOKEN='
+    ERROR = 'ERROR='
+    lines = body.strip().split('\n')
+    for line in lines:
+        if line.startswith(TOKEN):
+            token = line[len(TOKEN):]
+        elif line.startswith(ERROR):
+            error = line[len(ERROR):]
+    if error != '0':
+        raise PaymentError("Payment token generation failed. ERROR=%s" % error)
+    return token
+
+
+def clean_amount(amount):
+    return decimal.Decimal(str(amount)).quantize(decimal.Decimal('.01'), rounding=decimal.ROUND_UP)
+
+
 class Payment(object):
     _token = None
     _params = None
@@ -32,15 +50,12 @@ class Payment(object):
                  session_id=None, failure_url=None, commerce=None,):
         self.commerce = commerce or Commerce.create_commerce()
         self.request_ip = request_ip
-        self.amount = self.__get_amount(amount)
+        self.amount = clean_amount(amount)
         self.order_id = order_id
         self.success_url = success_url
         self.confirmation_url = confirmation_url
         self.session_id = session_id
         self.failure_url = failure_url or success_url
-
-    def __get_amount(self, amount):
-        return decimal.Decimal(str(amount)).quantize(decimal.Decimal('.01'), rounding=decimal.ROUND_UP)
 
     @property
     def redirect_url(self):
@@ -83,20 +98,7 @@ class Payment(object):
 
         body, _ = self.commerce.webpay_decrypt(response.content)
 
-        return self.get_token_from_body(body)
-
-    def get_token_from_body(self, body):
-        TOKEN = 'TOKEN='
-        ERROR = 'ERROR='
-        lines = body.strip().split('\n')
-        for line in lines:
-            if line.startswith(TOKEN):
-                token = line[len(TOKEN):]
-            elif line.startswith(ERROR):
-                error = line[len(ERROR):]
-        if error != '0':
-            raise PaymentError("Payment token generation failed. ERROR=%s" % error)
-        return token
+        return get_token_from_body(body)
 
     def get_process_url(self):
         if self.commerce.testing:

@@ -405,7 +405,6 @@ class PaymentTest(TestCase):
         """
         payment.get_raw_params returns params as seen on get_raw_params_sharp_no_pseudomac_no_session.txt
         """
-        #transaction_id = 123456789
         commerce = self.payment_kwargs['commerce']
         commerce.id = "1234567890"
         commerce.webpay_key_id = '101'
