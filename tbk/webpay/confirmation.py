@@ -159,35 +159,35 @@ class Confirmation(object):
     @property
     def acknowledge(self):  # pragma: no cover
         warnings.warn(
-            "Deprecated for commerce.acknowledge attribute.", DeprecationWarning)
+            "Deprecated for commerce.acknowledge. Will not be longer available at v1.0.0.", DeprecationWarning)
         return self.commerce.acknowledge
 
     @property
     def reject(self):  # pragma: no cover
         warnings.warn(
-            "Deprecated for commerce.reject attribute.", DeprecationWarning)
+            "Deprecated for commerce.reject. Will not be longer available at v1.0.0.", DeprecationWarning)
         return self.commerce.reject
 
     @property
     def message(self):  # pragma: no cover
         warnings.warn(
-            "Deprecated for payload.message attribute.", DeprecationWarning)
+            "Deprecated for payload.message. Will not be longer available at v1.0.0.", DeprecationWarning)
         return self.payload.message
 
     @property
     def paid_at(self):  # pragma: no cover
         warnings.warn(
-            "Deprecated for payload.paid_at attribute.", DeprecationWarning)
+            "Deprecated for payload.paid_at. Will not be longer available at v1.0.0.", DeprecationWarning)
         return self.payload.paid_at
 
     @property
     def transaction_id(self):  # pragma: no cover
         warnings.warn(
-            "Deprecated for payload.transaction_id attribute.", DeprecationWarning)
+            "Deprecated for payload.transaction_id. Will not be longer available at v1.0.0.", DeprecationWarning)
         return self.payload.transaction_id
 
     @property
     def params(self):  # pragma: no cover
         warnings.warn(
-            "Deprecated for payload.data attribute.", DeprecationWarning)
+            "Deprecated for payload.data. Will not be longer available at v1.0.0.", DeprecationWarning)
         return self.payload.data
