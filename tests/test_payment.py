@@ -85,9 +85,9 @@ class PaymentTest(TestCase):
         self.payment_kwargs['amount'] = 1234.567
         payment = Payment(**self.payment_kwargs)
 
-        self.assertEqual(Decimal("1234.56"), payment.amount)
+        self.assertEqual(Decimal("1234.57"), payment.amount)
 
-    @mock.patch('tbk.webpay.payment.Payment.process_url')
+    @mock.patch('tbk.webpay.payment.Payment.get_process_url')
     @mock.patch('tbk.webpay.payment.Payment.token')
     def test_redirect_url(self, token, process_url):
         """
@@ -103,9 +103,9 @@ class PaymentTest(TestCase):
         }
         self.assertEqual(expected, payment.redirect_url)
 
-    def test_process_url_development(self):
+    def test_get_process_url_development(self):
         """
-        payment.process_url on dev must return https://certificacion.webpay.cl:6443/filtroUnificado/bp_revision.cgi
+        payment.get_process_url on dev must return https://certificacion.webpay.cl:6443/filtroUnificado/bp_revision.cgi
         """
         commerce = mock.Mock()
         commerce.testing = True
@@ -114,12 +114,12 @@ class PaymentTest(TestCase):
 
         self.assertEqual(
             "https://certificacion.webpay.cl:6443/filtroUnificado/bp_revision.cgi",
-            payment.process_url()
+            payment.get_process_url()
         )
 
-    def test_process_url_production(self):
+    def test_get_process_url_production(self):
         """
-        payment.process_url on prod must return https://webpay.transbank.cl:443/filtroUnificado/bp_revision.cgi
+        payment.get_process_url on prod must return https://webpay.transbank.cl:443/filtroUnificado/bp_revision.cgi
         """
         commerce = mock.Mock()
         commerce.testing = False
@@ -128,7 +128,7 @@ class PaymentTest(TestCase):
 
         self.assertEqual(
             "https://webpay.transbank.cl:443/filtroUnificado/bp_revision.cgi",
-            payment.process_url()
+            payment.get_process_url()
         )
 
     @mock.patch('tbk.webpay.payment.Payment.fetch_token')
@@ -141,7 +141,7 @@ class PaymentTest(TestCase):
 
         self.assertEqual(
             fetch_token.return_value,
-            payment.token()
+            payment.token
         )
         logger.payment.assert_called_once_with(payment)
 
@@ -152,24 +152,24 @@ class PaymentTest(TestCase):
         payment.token must return a token already fetched by fetch_token and dont log
         """
         payment = Payment(**self.payment_kwargs)
-        token = payment.token()
+        token = payment.token
 
         fetch_token.reset_mock()
         logger.reset_mock()
 
         self.assertEqual(
             token,
-            payment.token()
+            payment.token
         )
         self.assertFalse(fetch_token.called)
         self.assertFalse(logger.payment.called)
 
     @mock.patch('tbk.webpay.payment.requests')
-    @mock.patch('tbk.webpay.payment.Payment.validation_url')
+    @mock.patch('tbk.webpay.payment.Payment.get_validation_url')
     @mock.patch('tbk.webpay.payment.Payment.params')
-    def test_fetch_token(self, params, validation_url, requests):
+    def test_fetch_token(self, params, get_validation_url, requests):
         """
-        payment.fetch_token must post data to validation_url and get token from response
+        payment.fetch_token must post data to get_validation_url and get token from response
         """
         python_version = "%d.%d" % (sys.version_info.major, sys.version_info.minor)
         user_agent = "TBK/%(TBK_VERSION_KCC)s (Python/%(PYTHON_VERSION)s)" % {
@@ -188,7 +188,7 @@ class PaymentTest(TestCase):
         token = payment.fetch_token()
 
         requests.post.assert_called_once_with(
-            validation_url.return_value,
+            get_validation_url.return_value,
             data={
                 'TBK_VERSION_KCC': TBK_VERSION_KCC,
                 'TBK_CODIGO_COMERCIO': commerce.id,
@@ -205,11 +205,11 @@ class PaymentTest(TestCase):
         self.assertEqual(token, 'e975ffc4f0605ddf3afc299eee6aeffb59efba24769548acf58e34a89ae4e228')
 
     @mock.patch('tbk.webpay.payment.requests')
-    @mock.patch('tbk.webpay.payment.Payment.validation_url')
+    @mock.patch('tbk.webpay.payment.Payment.get_validation_url')
     @mock.patch('tbk.webpay.payment.Payment.params')
-    def test_fetch_token_with_redirect(self, params, validation_url, requests):
+    def test_fetch_token_with_redirect(self, params, get_validation_url, requests):
         """
-        payment.fetch_token must post data to validation_url and get token from response after redirect.
+        payment.fetch_token must post data to get_validation_url and get token from response after redirect.
         """
         commerce = self.payment_kwargs['commerce']
         payment = Payment(**self.payment_kwargs)
@@ -231,11 +231,11 @@ class PaymentTest(TestCase):
         self.assertEqual(token, 'e975ffc4f0605ddf3afc299eee6aeffb59efba24769548acf58e34a89ae4e228')
 
     @mock.patch('tbk.webpay.payment.requests')
-    @mock.patch('tbk.webpay.payment.Payment.validation_url')
+    @mock.patch('tbk.webpay.payment.Payment.get_validation_url')
     @mock.patch('tbk.webpay.payment.Payment.params')
-    def test_fetch_token_not_ok(self, params, validation_url, requests):
+    def test_fetch_token_not_ok(self, params, get_validation_url, requests):
         """
-        payment.fetch_token must post data to validation_url and fail when status_code is not 200
+        payment.fetch_token must post data to get_validation_url and fail when status_code is not 200
         """
         payment = Payment(**self.payment_kwargs)
         response = requests.post.return_value
@@ -248,11 +248,11 @@ class PaymentTest(TestCase):
         )
 
     @mock.patch('tbk.webpay.payment.requests')
-    @mock.patch('tbk.webpay.payment.Payment.validation_url')
+    @mock.patch('tbk.webpay.payment.Payment.get_validation_url')
     @mock.patch('tbk.webpay.payment.Payment.params')
-    def test_fetch_token_with_error(self, params, validation_url, requests):
+    def test_fetch_token_with_error(self, params, get_validation_url, requests):
         """
-        payment.fetch_token must post data to validation_url and fail with ERROR code
+        payment.fetch_token must post data to get_validation_url and fail with ERROR code
         """
         payment = Payment(**self.payment_kwargs)
         response = requests.post.return_value
@@ -268,9 +268,9 @@ class PaymentTest(TestCase):
             payment.fetch_token
         )
 
-    def test_validation_url_production(self):
+    def test_get_validation_url_production(self):
         """
-        payment.validation_url on prod. must returns
+        payment.get_validation_url on prod. must returns
         https://webpay.transbank.cl:443/filtroUnificado/bp_validacion.cgi
         """
         commerce = mock.Mock()
@@ -280,12 +280,12 @@ class PaymentTest(TestCase):
 
         self.assertEqual(
             "https://webpay.transbank.cl:443/filtroUnificado/bp_validacion.cgi",
-            payment.validation_url()
+            payment.get_validation_url()
         )
 
-    def test_validation_url_development(self):
+    def test_get_validation_url_development(self):
         """
-        payment.validation_url on dev. must returns
+        payment.get_validation_url on dev. must returns
         https://certificacion.webpay.cl:6443/filtroUnificado/bp_validacion.cgi
         """
         commerce = mock.Mock()
@@ -295,153 +295,150 @@ class PaymentTest(TestCase):
 
         self.assertEqual(
             "https://certificacion.webpay.cl:6443/filtroUnificado/bp_validacion.cgi",
-            payment.validation_url()
+            payment.get_validation_url()
         )
 
-    @mock.patch('tbk.webpay.payment.Payment.raw_params')
+    @mock.patch('tbk.webpay.payment.Payment.get_raw_params')
     @mock.patch('tbk.webpay.payment.Payment.verify')
-    def test_params_not_created(self, verify, raw_params):
+    def test_params_not_created(self, verify, get_raw_params):
         """
-        payment.params must verify and returns encrypted raw_params
+        payment.params must verify and returns encrypted get_raw_params
         """
         commerce = self.payment_kwargs['commerce']
         payment = Payment(**self.payment_kwargs)
 
-        result = payment.params()
+        result = payment.params
 
         verify.assert_called_once_with()
-        commerce.webpay_encrypt.assert_called_once_with(raw_params.return_value)
+        commerce.webpay_encrypt.assert_called_once_with(get_raw_params.return_value)
         self.assertEqual(result, commerce.webpay_encrypt.return_value)
-        raw_params.assert_called_once_with()
+        get_raw_params.assert_called_once_with()
 
-    @mock.patch('tbk.webpay.payment.Payment.raw_params')
+    @mock.patch('tbk.webpay.payment.Payment.get_raw_params')
     @mock.patch('tbk.webpay.payment.Payment.verify')
-    def test_params_created(self, verify, raw_params):
+    def test_params_created(self, verify, get_raw_params):
         """
-        payment.params must returns the already verified and encrypted raw_params
+        payment.params must returns the already verified and encrypted get_raw_params
         """
         commerce = self.payment_kwargs['commerce']
         payment = Payment(**self.payment_kwargs)
-        result = payment.params()
+        result = payment.params
 
         verify.reset_mock()
         commerce.webpay_encrypt.reset_mock()
-        raw_params.reset_mock()
+        get_raw_params.reset_mock()
 
-        self.assertEqual(payment.params(), result)
+        self.assertEqual(payment.params, result)
         self.assertFalse(verify.called)
         self.assertFalse(commerce.webpay_encrypt.called)
-        self.assertFalse(raw_params.called)
+        self.assertFalse(get_raw_params.called)
 
-    @mock.patch('tbk.webpay.payment.Payment.raw_params')
+    @mock.patch('tbk.webpay.payment.Payment.get_raw_params')
     @mock.patch('tbk.webpay.payment.Payment.verify')
-    def test_params_doesnt_verify(self, verify, raw_params):
+    def test_params_doesnt_verify(self, verify, get_raw_params):
         """
         payment.params must fail with PaymentError when verify fail
         """
         payment = Payment(**self.payment_kwargs)
         verify.side_effect = PaymentError
 
-        self.assertRaises(PaymentError, payment.params)
+        with self.assertRaises(PaymentError):
+            payment.params
         verify.assert_called_once_with()
 
-    @mock.patch('tbk.webpay.payment.Payment.transaction_id')
     @mock.patch('tbk.webpay.payment.hashlib')
-    def test_raw_params(self, hashlib, transaction_id):
+    def test_get_raw_params(self, hashlib):
         """
-        payment.raw_params returns params as seen on raw_params.txt
+        payment.get_raw_params returns params as seen on raw_params.txt
         """
-        transaction_id.return_value = 123456789
         h = hashlib.new.return_value
         h.hexdigest.return_value = "8455b5720ff48c0efae649a42b6d1aa2"
         commerce = self.payment_kwargs['commerce']
         commerce.id = "1234567890"
         commerce.webpay_key_id = '101'
         payment = Payment(**self.payment_kwargs)
-        raw_params_file_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'raw_params.txt')
-        with open(raw_params_file_path, 'r') as raw_params_file:
-            raw_params = raw_params_file.read()
+        payment._transaction_id = 123456789
+        get_raw_params_file_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'raw_params.txt')
+        with open(get_raw_params_file_path, 'r') as get_raw_params_file:
+            get_raw_params = get_raw_params_file.read()
 
-            result = payment.raw_params()
+            result = payment.get_raw_params()
 
             h.hexdigest.assert_called_once_with()
-            h.update.assert_any_call(payment.raw_params('&', False))
+            h.update.assert_any_call(payment.get_raw_params('&', False))
             h.update.assert_any_call(str(payment.commerce.id))
             h.update.assert_any_call("webpay")
-            self.assertEqual(raw_params, result)
+            self.assertEqual(get_raw_params, result)
 
-    @mock.patch('tbk.webpay.payment.Payment.transaction_id')
-    def test_raw_params_sharp_no_pseudomac(self, transaction_id):
+    def test_get_raw_params_sharp_no_pseudomac(self):
         """
-        payment.raw_params returns params as seen on raw_params_sharp_no_pseudomac.txt
+        payment.get_raw_params returns params as seen on get_raw_params_sharp_no_pseudomac.txt
         """
-        transaction_id.return_value = 123456789
         commerce = self.payment_kwargs['commerce']
         commerce.id = "1234567890"
         commerce.webpay_key_id = '101'
         payment = Payment(**self.payment_kwargs)
-        raw_params_file_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'raw_params_sharp_no_pseudomac.txt')
-        with open(raw_params_file_path, 'r') as raw_params_file:
-            raw_params = raw_params_file.read()
-            result = payment.raw_params(include_pseudomac=False)
-            self.assertEqual(raw_params, result)
+        payment._transaction_id = 123456789
+        get_raw_params_file_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'raw_params_sharp_no_pseudomac.txt')
+        with open(get_raw_params_file_path, 'r') as get_raw_params_file:
+            get_raw_params = get_raw_params_file.read()
+            result = payment.get_raw_params(include_pseudomac=False)
+            self.assertEqual(get_raw_params, result)
 
-    @mock.patch('tbk.webpay.payment.Payment.transaction_id')
-    def test_raw_params_ampersand_no_pseudomac(self, transaction_id):
+    def test_get_raw_params_ampersand_no_pseudomac(self):
         """
-        payment.raw_params returns params as seen on raw_params_ampersand_no_pseudomac.txt
+        payment.get_raw_params returns params as seen on raw_params_ampersand_no_pseudomac.txt
         """
-        transaction_id.return_value = 123456789
         commerce = self.payment_kwargs['commerce']
         commerce.id = "1234567890"
         commerce.webpay_key_id = '101'
         payment = Payment(**self.payment_kwargs)
-        raw_params_file_path = os.path.join(
+        payment._transaction_id = 123456789
+        get_raw_params_file_path = os.path.join(
             os.path.dirname(__file__), 'fixtures', 'raw_params_ampersand_no_pseudomac.txt')
-        with open(raw_params_file_path, 'r') as raw_params_file:
-            raw_params = raw_params_file.read()
-            result = payment.raw_params(splitter="&", include_pseudomac=False)
-            self.assertEqual(raw_params, result)
+        with open(get_raw_params_file_path, 'r') as get_raw_params_file:
+            get_raw_params = get_raw_params_file.read()
+            result = payment.get_raw_params(splitter="&", include_pseudomac=False)
+            self.assertEqual(get_raw_params, result)
 
-    @mock.patch('tbk.webpay.payment.Payment.transaction_id')
-    def test_raw_params_ampersand_no_pseudomac_no_session_id(self, transaction_id):
+    def test_get_raw_params_ampersand_no_pseudomac_no_session_id(self):
         """
-        payment.raw_params returns params as seen on raw_params_sharp_no_pseudomac_no_session.txt
+        payment.get_raw_params returns params as seen on get_raw_params_sharp_no_pseudomac_no_session.txt
         """
-        transaction_id.return_value = 123456789
         commerce = self.payment_kwargs['commerce']
         commerce.id = "1234567890"
         commerce.webpay_key_id = '101'
         self.payment_kwargs['session_id'] = None
         payment = Payment(**self.payment_kwargs)
-        raw_params_file_path = os.path.join(
+        payment._transaction_id = 123456789
+        get_raw_params_file_path = os.path.join(
             os.path.dirname(__file__), 'fixtures', 'raw_params_sharp_no_pseudomac_no_session.txt')
-        with open(raw_params_file_path, 'r') as raw_params_file:
-            raw_params = raw_params_file.read()
-            result = payment.raw_params(include_pseudomac=False)
-            self.assertEqual(raw_params, result)
+        with open(get_raw_params_file_path, 'r') as get_raw_params_file:
+            get_raw_params = get_raw_params_file.read()
+            result = payment.get_raw_params(include_pseudomac=False)
+            self.assertEqual(get_raw_params, result)
 
     @mock.patch('tbk.webpay.payment.random')
     def test_transaction_id(self, random):
         """
-        payment.transaction_id returns a random int between 0 and 10000000000
+        payment.get_transaction_id returns a random int between 0 and 10000000000
         """
         random.randint.return_value = 123456789
         payment = Payment(**self.payment_kwargs)
 
         self.assertEqual(random.randint.return_value,
-                         payment.transaction_id())
+                         payment.transaction_id)
         random.randint.assert_called_once_with(0, 10000000000 - 1)
 
     def test_transaction_id_already_created(self):
         """
-        payment.transaction_id returns a the same random int between 0 and 10000000000 the second time
+        payment.get_transaction_id returns a the same random int between 0 and 10000000000 the second time
         """
         payment = Payment(**self.payment_kwargs)
-        first_result = payment.transaction_id()
+        first_result = payment.transaction_id
 
         self.assertEqual(first_result,
-                         payment.transaction_id())
+                         payment.transaction_id)
 
     def test_verify(self):
         payment = Payment(**self.payment_kwargs)

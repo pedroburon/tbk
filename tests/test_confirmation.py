@@ -11,6 +11,7 @@ import pytz
 
 from tbk.webpay.confirmation import Confirmation, ConfirmationPayload
 from tbk.webpay import CONFIRMATION_TIMEOUT
+from tbk.webpay.logging import Logger
 
 CONFIRMATION_DATA = {
     'TBK_CODIGO_AUTORIZACION': '001882',
@@ -30,15 +31,16 @@ CONFIRMATION_DATA = {
 }
 
 
+@mock.patch('tbk.webpay.confirmation.ConfirmationPayload', spec=ConfirmationPayload)
+@mock.patch('tbk.webpay.confirmation.logger', spec=Logger)
 class ConfirmationTest(TestCase):
 
     def setUp(self):
         self.request_ip = "123.123.123.123"
         self.commerce = mock.Mock()
 
-    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
     @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
-    def test_init(self, parse, ConfirmationPayload):
+    def test_init(self, parse, logger, ConfirmationPayload):
         data = {
             'TBK_PARAM': mock.Mock()
         }
@@ -53,14 +55,13 @@ class ConfirmationTest(TestCase):
         self.assertEqual(
             ConfirmationPayload.return_value, confirmation.payload)
 
-    def test_init_wo_tbk_param(self):
+    def test_init_wo_tbk_param(self, logger, ConfirmationPayload):
         data = {}
 
         self.assertRaises(
             KeyError, Confirmation, self.commerce, self.request_ip, data)
 
-    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
-    def test_parse(self, ConfirmationPayload):
+    def test_parse(self, logger, ConfirmationPayload):
         with open(os.path.join(os.path.dirname(__file__), 'fixtures', 'confirmation.txt')) as f:
             confirmation_data = f.read()
         data = {
@@ -79,8 +80,6 @@ class ConfirmationTest(TestCase):
         self.assertEqual(
             ConfirmationPayload.return_value, confirmation.payload)
 
-    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
-    @mock.patch('tbk.webpay.confirmation.logger')
     @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
     def test_is_success(self, parse, logger, ConfirmationPayload):
         parse.return_value = {
@@ -96,8 +95,6 @@ class ConfirmationTest(TestCase):
 
         self.assertTrue(confirmation.is_success(check_timeout=False))
 
-    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
-    @mock.patch('tbk.webpay.confirmation.logger')
     @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
     def test_is_success_respuesta_not_0(self, parse, logger, ConfirmationPayload):
         parse.return_value = {
@@ -114,10 +111,8 @@ class ConfirmationTest(TestCase):
             self.assertFalse(confirmation.is_success(check_timeout=False))
 
     @mock.patch('tbk.webpay.confirmation.Confirmation.is_timeout')
-    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
-    @mock.patch('tbk.webpay.confirmation.logger')
     @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
-    def test_is_success_timeout(self, parse, logger, ConfirmationPayload, is_timeout):
+    def test_is_success_timeout(self, parse, is_timeout, logger, ConfirmationPayload):
         parse.return_value = {
             'TBK_RESPUESTA': '0',
         }
@@ -132,10 +127,8 @@ class ConfirmationTest(TestCase):
         self.assertFalse(confirmation.is_success())
 
     @mock.patch('tbk.webpay.confirmation.Confirmation.is_timeout')
-    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
-    @mock.patch('tbk.webpay.confirmation.logger')
     @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
-    def test_is_success_timeout_dont_check(self, parse, logger, ConfirmationPayload, is_timeout):
+    def test_is_success_timeout_dont_check(self, parse, is_timeout, logger, ConfirmationPayload):
         parse.return_value = {
             'TBK_RESPUESTA': '0',
         }
@@ -149,8 +142,6 @@ class ConfirmationTest(TestCase):
 
         self.assertTrue(confirmation.is_success(check_timeout=False))
 
-    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
-    @mock.patch('tbk.webpay.confirmation.logger')
     @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
     def test_order_id(self, parse, logger, ConfirmationPayload):
         data = {
@@ -162,11 +153,8 @@ class ConfirmationTest(TestCase):
 
         self.assertEqual(payload.order_id, confirmation.order_id)
 
-    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
-    @mock.patch('tbk.webpay.confirmation.logger')
     @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
     def test_amount(self, parse, logger, ConfirmationPayload):
-
         data = {
             'TBK_PARAM': mock.Mock()
         }
@@ -176,8 +164,6 @@ class ConfirmationTest(TestCase):
 
         self.assertEqual(payload.amount, confirmation.amount)
 
-    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
-    @mock.patch('tbk.webpay.confirmation.logger')
     @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
     def test_timeout(self, parse, logger, ConfirmationPayload):
         data = {
@@ -190,8 +176,6 @@ class ConfirmationTest(TestCase):
 
         self.assertTrue(confirmation.is_timeout())
 
-    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
-    @mock.patch('tbk.webpay.confirmation.logger')
     @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
     def test_not_timeout(self, parse, logger, ConfirmationPayload):
         data = {
