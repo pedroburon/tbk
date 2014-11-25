@@ -94,12 +94,15 @@ class ConfirmationTest(TestCase):
 
         confirmation = Confirmation(self.commerce, self.request_ip, data)
 
-        self.assertTrue(confirmation.is_success())
+        self.assertTrue(confirmation.is_success(check_timeout=False))
 
     @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
     @mock.patch('tbk.webpay.confirmation.logger')
     @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
     def test_is_success_respuesta_not_0(self, parse, logger, ConfirmationPayload):
+        parse.return_value = {
+            'TBK_RESPUESTA': '0',
+        }
         data = {
             'TBK_PARAM': mock.Mock()
         }
@@ -108,13 +111,48 @@ class ConfirmationTest(TestCase):
         for i in range(1, 10):
             payload.response = -i
             confirmation = Confirmation(self.commerce, self.request_ip, data)
-            self.assertFalse(confirmation.is_success())
+            self.assertFalse(confirmation.is_success(check_timeout=False))
+
+    @mock.patch('tbk.webpay.confirmation.Confirmation.is_timeout')
+    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
+    @mock.patch('tbk.webpay.confirmation.logger')
+    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
+    def test_is_success_timeout(self, parse, logger, ConfirmationPayload, is_timeout):
+        parse.return_value = {
+            'TBK_RESPUESTA': '0',
+        }
+        data = {
+            'TBK_PARAM': mock.Mock()
+        }
+        payload = ConfirmationPayload.return_value
+        payload.response = payload.SUCCESS_RESPONSE_CODE
+        is_timeout.return_value = True
+        confirmation = Confirmation(self.commerce, self.request_ip, data)
+
+        self.assertFalse(confirmation.is_success())
+
+    @mock.patch('tbk.webpay.confirmation.Confirmation.is_timeout')
+    @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
+    @mock.patch('tbk.webpay.confirmation.logger')
+    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
+    def test_is_success_timeout_dont_check(self, parse, logger, ConfirmationPayload, is_timeout):
+        parse.return_value = {
+            'TBK_RESPUESTA': '0',
+        }
+        data = {
+            'TBK_PARAM': mock.Mock()
+        }
+        payload = ConfirmationPayload.return_value
+        payload.response = payload.SUCCESS_RESPONSE_CODE
+        is_timeout.return_value = True
+        confirmation = Confirmation(self.commerce, self.request_ip, data)
+
+        self.assertTrue(confirmation.is_success(check_timeout=False))
 
     @mock.patch('tbk.webpay.confirmation.ConfirmationPayload')
     @mock.patch('tbk.webpay.confirmation.logger')
     @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
     def test_order_id(self, parse, logger, ConfirmationPayload):
-
         data = {
             'TBK_PARAM': mock.Mock()
         }
