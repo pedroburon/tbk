@@ -139,7 +139,9 @@ class Confirmation(object):
         params['TBK_MAC'] = signature
         return params
 
-    def is_success(self):
+    def is_success(self, check_timeout=True):
+        if check_timeout and self.is_timeout():
+            return False
         return self.payload.response == self.payload.SUCCESS_RESPONSE_CODE
 
     @property
