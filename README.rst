@@ -86,15 +86,15 @@ Then to confirm payment, use an endpoint with:
 
     from tbk.webpay.confirmation import Confirmation
 
-    def confirmation(request):
-        conf = Confirmation(
+    def confirm_payment(request):
+        confirmation = Confirmation(
             commerce=commerce,
             request_ip=request.ip_address,
             data=request.POST
         )
 
         # validate_confirmation validate if order_id and amount are valid.
-        if conf.is_success() and validate_confirmation(conf) and not conf.is_timeout():
+        if confirmation.is_success() and validate_confirmation(confirmation.order_id, confirmation.amount):
             return HttpResponse(commerce.acknowledge)
 
         return HttpResponse(commerce.reject)
