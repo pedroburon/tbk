@@ -1,7 +1,7 @@
 tbk - Transbank's Webpay protocol
 =================================
 
-Python implementation of Transbank's Webpay protocol. `tbk` replaces Webpay KCC by a easy-to-use Python API.
+Python implementation of Transbank's Webpay protocol. `tbk` replaces **Webpay KCC** by a easy-to-use API.
 
 Installation
 ------------
@@ -80,7 +80,7 @@ Index
 .. toctree::
    :maxdepth: 2
 
-   code.rst
+   api
 
 * :ref:`genindex`
 * :ref:`search`
@@ -90,7 +90,7 @@ Contribute
 ----------
 
 - Issue Tracker: http://github.com/pedroburon/tbk/issues
-- Source Code: http://github.com/tbk/tbk
+- Source Code: http://github.com/pedroburon/tbk
 
 Support
 -------

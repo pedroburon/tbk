@@ -76,9 +76,13 @@ CvLM94G4V7lxe2IHKPqLscMCAwEAAQ==
 
 class Commerce(object):
     '''
-    Initialize a Commerce with given :code:`commerce_id` and the private PEM :code:`key`.
+    Initialize a Commerce with given ``commerce_id`` and the private PEM ``key``.
 
-    If :code:`testing` flag is :code:`True` then :code:`TEST_COMMERCE_KEY` and :code:`TEST_COMMERCE_ID` are used.
+    If ``testing`` flag is `True` then ``TEST_COMMERCE_KEY`` and ``TEST_COMMERCE_ID`` are used.
+
+    :param commerce_id: Commerce ID
+    :param key: Commerce private RSA key
+    :param testing: If ``True`` will use certification URLs and keys.
     '''
     TEST_COMMERCE_KEY = TEST_COMMERCE_KEY
     TEST_COMMERCE_ID = "597026007976"
@@ -93,8 +97,8 @@ class Commerce(object):
     @staticmethod
     def create_commerce():
         """
-        Creates commerce from environment variables :code:`TBK_COMMERCE_ID`, :code:`TBK_COMMERCE_KEY`
-        or for testing purposes :code:`TBK_COMMERCE_TESTING`.
+        Creates commerce from environment variables ``TBK_COMMERCE_ID``, ``TBK_COMMERCE_KEY``
+        or for testing purposes ``TBK_COMMERCE_TESTING``.
         """
         commerce_id = os.getenv('TBK_COMMERCE_ID')
         commerce_key = os.getenv('TBK_COMMERCE_KEY')
@@ -148,13 +152,15 @@ class Commerce(object):
     def get_public_key(self):
         '''
         Returns Commerce public key from PEM private key.
+
         '''
         return self.get_commerce_key().publickey().exportKey()
 
     def get_config_tbk(self, confirmation_url):
         '''
-        Returns a string with the :code:`TBK_CONFIG.dat` file content using :code:`confirmation_url` for
-        confirmation callback.
+        Returns a string with the ``TBK_CONFIG.dat``.
+
+        :param confirmation_url: URL where callback is made.
         '''
         config = (
             "IDCOMERCIO = {commerce_id}\n"
@@ -194,6 +200,6 @@ class Commerce(object):
     @property
     def reject(self):
         '''
-        The **ERR** string encrypted for succes response on confirmation to Transbank.
+        The **ERR** string encrypted for reject response on confirmation to Transbank.
         '''
         return self.webpay_encrypt('ERR')
