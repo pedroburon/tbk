@@ -56,7 +56,7 @@ class ConfirmationPayload(object):
         santiago_dt = santiago.localize(
             datetime.datetime(today.year, m, d, h, i, s))
 
-        return santiago_d
+        return santiago_dt
 
     @property
     def message(self):
