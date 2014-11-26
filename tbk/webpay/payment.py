@@ -41,6 +41,9 @@ def clean_amount(amount):
 
 
 class Payment(object):
+    """
+    Initialize a Payment object with params required to create the redirection url.
+    """
     _token = None
     _params = None
     _transaction_id = None
@@ -59,6 +62,9 @@ class Payment(object):
 
     @property
     def redirect_url(self):
+        """
+        Redirect user to this URL and will begin the payment process.
+        """
         return REDIRECT_URL % {
             'tbk_version': TBK_VERSION_KCC,
             'process_url': self.get_process_url(),
@@ -67,6 +73,9 @@ class Payment(object):
 
     @property
     def token(self):
+        """
+        Token given by Transbank for payment initialization url.
+        """
         if not self._token:
             self._token = self.fetch_token()
             logger.payment(self)
@@ -134,6 +143,9 @@ class Payment(object):
 
     @property
     def transaction_id(self):
+        """
+        Transaction ID for Transbank, a secure random int between 0 and 999999999.
+        """
         if not self._transaction_id:
             self._transaction_id = random.randint(0, 10000000000 - 1)
         return self._transaction_id
