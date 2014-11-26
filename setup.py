@@ -14,10 +14,11 @@ def read_file(filename):
         return ''
 
 long_description = read_file('README.rst').strip().split('split here', 1)[0]
+version = __import__('tbk').__version__
 
 setup(
     name='tbk',
-    version=__import__('tbk').__version__,
+    version=version,
     description=__import__('tbk').__doc__.strip(),
     long_description=long_description,
     author='Pedro Buron',
@@ -25,6 +26,7 @@ setup(
     maintainer='Pedro Buron',
     maintainer_email='pedroburonv@gmail.com',
     url='http://github.com/pedroburon/tbk',
+    download_url='http://github.com/pedroburon/tbk/archive/{version}.zip'.format(version=version),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
@@ -33,7 +35,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Environment :: Console',
         'Environment :: Web Environment',
-        'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
     ],
     keywords=['webpay', 'chile', 'payments', 'transbank'],
     install_requires=[
@@ -49,5 +51,5 @@ setup(
     packages=find_packages(),
     test_suite='nose.collector',
     zip_safe=True,
-    license='GPLv2'
+    license='GPLv3'
 )
