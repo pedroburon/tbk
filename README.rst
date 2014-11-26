@@ -6,7 +6,7 @@ tbk - Transbank's Webpay protocol
 Python implementation of Transbank's Webpay protocol.
 
 
-|Latest Version| |Development Status| |Build Status| |Coverage Status| |Code Health| |Downloads|
+|Latest Version| |Development Status| |Build Status| |Coverage Status| |Code Health| |Downloads| |Documentation|
 
 
 .. |Latest Version| image:: https://pypip.in/version/tbk/badge.svg?
@@ -27,6 +27,9 @@ Python implementation of Transbank's Webpay protocol.
 .. |Downloads| image:: https://pypip.in/download/tbk/badge.svg?period=month
    :target: https://pypi.python.org/pypi/tbk/
    :alt: Downloads
+.. |Documentation| image:: https://readthedocs.org/projects/tbk/badge/?version=latest
+   :target: https://readthedocs.org/projects/tbk/?badge=latest
+   :alt: Documentation Status
 
 Installation
 ------------
