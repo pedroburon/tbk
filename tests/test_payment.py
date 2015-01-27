@@ -109,7 +109,7 @@ class PaymentTest(TestCase):
         expected = redirect_url % {
             'process_url': process_url.return_value,
             'tbk_version': TBK_VERSION_KCC,
-            'token': token.return_value
+            'token': token
         }
         self.assertEqual(expected, payment.redirect_url)
 

@@ -68,7 +68,7 @@ class Payment(object):
         return REDIRECT_URL % {
             'tbk_version': TBK_VERSION_KCC,
             'process_url': self.get_process_url(),
-            'token': self.token()
+            'token': self.token
         }
 
     @property
