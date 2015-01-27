@@ -80,5 +80,4 @@ logger = Logger(NullHandler())
 
 
 def configure_logger(handler):
-    global logger
     logger.set_handler(handler)
