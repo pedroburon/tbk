@@ -13,3 +13,7 @@ API documentation
 
 .. autoclass:: tbk.webpay.confirmation.ConfirmationPayload
    :members:
+
+.. autoclass:: tbk.webpay.logging.BaseHandler
+   :members:
+

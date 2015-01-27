@@ -63,6 +63,8 @@ class Payment(object):
     def redirect_url(self):
         """
         Redirect user to this URL and will begin the payment process.
+
+        Will raise PaymentError when an error ocurred.
         """
         return REDIRECT_URL % {
             'tbk_version': TBK_VERSION_KCC,
@@ -74,6 +76,8 @@ class Payment(object):
     def token(self):
         """
         Token given by Transbank for payment initialization url.
+
+        Will raise PaymentError when an error ocurred.
         """
         if not self._token:
             self._token = self.fetch_token()
