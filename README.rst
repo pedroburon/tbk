@@ -71,13 +71,13 @@ Create a new payment and redirect user.
     from tbk.webpay.payment import Payment
 
     payment = Payment(
-        request_ip='123.123.123.123',
+        request_ip='127.0.0.1', # customer request ip
         commerce=commerce,
         success_url='http://localhost:8080/webpay/success/',
-        confirmation_url='http://127.0.0.1:8080/webpay/confirmation/',
+        confirmation_url='http://111.122.133.144:8080/webpay/confirmation/', # callback url with IP
         failure_url='http://localhost:8080/webpay/failure/',
         session_id='SOME_SESSION_VALUE',
-        amount=123456,
+        amount=123456, # could be int, str or Decimal
         order_id=1,
     )
     payment.redirect_url
