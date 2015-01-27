@@ -34,6 +34,7 @@ If you want to set the official webpay log (for certification issues):
     from tbk.webpay.logging.official import WebpayOfficialHandler
 
     configure_logger(WebpayOfficialHandler(LOG_BASE_PATH))
+    # Others Handlers must implement `tbk.webpay.logging.BaseHandler`
 
 Create a new payment and redirect user.
 
@@ -42,10 +43,10 @@ Create a new payment and redirect user.
     from tbk.webpay.payment import Payment
 
     payment = Payment(
-        request_ip='123.123.123.123',
+        request_ip=CUSTOMER_REQUEST_IP,
         commerce=commerce,
         success_url='http://localhost:8080/webpay/success/',
-        confirmation_url='http://127.0.0.1:8080/webpay/confirmation/',
+        confirmation_url='http://123.123.123.123:8080/webpay/confirmation/',
         failure_url='http://localhost:8080/webpay/failure/',
         session_id='SOME_SESSION_VALUE',
         amount=123456,
@@ -54,7 +55,7 @@ Create a new payment and redirect user.
     payment.redirect_url
 
 
-Then to confirm payment, use an endpoint with:
+Then to confirm payment, use an endpoint on confirmation_url` with:
 
 ::
 
