@@ -300,8 +300,11 @@ class ConfirmationPayloadTest(TestCase):
 
     def test_accountable_date_next_year(self):
         santiago = pytz.timezone('America/Santiago')
-        transaction_date = datetime.datetime(2014, 12, 31, 11, 59, 59)
-        accountable_date = datetime.datetime(2015, 01, 02)
+        today = santiago.localize(datetime.datetime.today())
+        year = today.year
+        santiago = pytz.timezone('America/Santiago')
+        transaction_date = datetime.datetime(year, 12, 31, 11, 59, 59)
+        accountable_date = datetime.datetime(year + 1, 01, 02)
         expected = santiago.localize(accountable_date)
         self.assert_attribute(
             expected,
@@ -365,5 +368,14 @@ class ConfirmationPayloadTest(TestCase):
 
     def assert_attribute(self, expected, attribute, **data):
         payload = ConfirmationPayload(data)
+        result = getattr(payload, attribute)
 
-        self.assertEqual(expected, getattr(payload, attribute))
+        self.assertEqual(
+            expected,
+            result,
+            '{attribute} not equal to {expected} but {result}'.format(
+                attribute=attribute,
+                expected=expected,
+                result=result
+            )
+        )
