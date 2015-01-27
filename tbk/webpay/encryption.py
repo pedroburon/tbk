@@ -6,7 +6,7 @@ from Crypto.Hash import SHA512
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.Signature import PKCS1_v1_5
 
-__all__ = ['Encryption', 'Decryption', 'InvalidMessageException']
+__all__ = ['Encryption', 'Decryption', 'InvalidMessageException', 'DecryptionError']
 
 
 class Encryption(object):
@@ -75,10 +75,13 @@ class Decryption(object):
         return raw[:16]
 
     def get_key(self, raw):
-        recipient_key_bytes = int(self.recipient_key.publickey().n.bit_length() / 8)
-        encrypted_key = raw[16:16 + recipient_key_bytes]
-        cipher = PKCS1_OAEP.new(self.recipient_key)
-        return cipher.decrypt(encrypted_key)
+        try:
+            recipient_key_bytes = int(self.recipient_key.publickey().n.bit_length() / 8)
+            encrypted_key = raw[16:16 + recipient_key_bytes]
+            cipher = PKCS1_OAEP.new(self.recipient_key)
+            return cipher.decrypt(encrypted_key)
+        except ValueError:
+            raise DecryptionError("Incorrect message length.")
 
     def get_decrypted_message(self, iv, key, raw):
         recipient_key_bytes = int(self.recipient_key.publickey().n.bit_length() / 8)
@@ -104,3 +107,8 @@ class Decryption(object):
 
 class InvalidMessageException(Exception):
     pass
+
+
+class DecryptionError(Exception):
+    pass
+

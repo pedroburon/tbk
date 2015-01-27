@@ -8,7 +8,7 @@ from six.moves.urllib.parse import urlparse
 import requests
 from Crypto.Random import random
 
-from .commerce import Commerce
+from .commerce import Commerce, DecryptionError
 from .logging import logger
 from . import TBK_VERSION_KCC
 
@@ -92,7 +92,7 @@ class Payment(object):
                     'TBK_VERSION_KCC': TBK_VERSION_KCC,
                     'TBK_CODIGO_COMERCIO': self.commerce.id,
                     'TBK_KEY_ID': self.commerce.webpay_key_id,
-                    'TBK_PARAM': self.params()
+                    'TBK_PARAM': self.params
                 },
                 headers={
                     'User-Agent': USER_AGENT
@@ -105,7 +105,11 @@ class Payment(object):
         if response.status_code != 200:
             raise PaymentError("Payment token generation failed")
 
-        body, _ = self.commerce.webpay_decrypt(response.content)
+        try:
+            body, _ = self.commerce.webpay_decrypt(response.content)
+        except DecryptionError:
+            if get_token_from_body(response.content):
+                raise PaymentError("Suspicious message from server: %s" % response.content)
 
         return get_token_from_body(body)
 

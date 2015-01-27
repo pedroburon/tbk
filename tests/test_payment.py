@@ -7,6 +7,16 @@ import mock
 
 from tbk.webpay import TBK_VERSION_KCC
 from tbk.webpay.payment import Payment, PaymentError
+from tbk.webpay.encryption import DecryptionError
+
+RESPONSE_WITH_ERROR = '''
+<HTML>
+<BODY>
+ERROR=1
+TOKEN=0000000000000000000000000000000000000000000000000000000000000000
+</BODY>
+</HTML>
+'''
 
 
 class PaymentTest(TestCase):
@@ -193,7 +203,7 @@ class PaymentTest(TestCase):
                 'TBK_VERSION_KCC': TBK_VERSION_KCC,
                 'TBK_CODIGO_COMERCIO': commerce.id,
                 'TBK_KEY_ID': commerce.webpay_key_id,
-                'TBK_PARAM': params.return_value
+                'TBK_PARAM': params
             },
             headers={
                 'User-Agent': user_agent
@@ -265,6 +275,48 @@ class PaymentTest(TestCase):
 
         self.assertRaisesRegexp(
             PaymentError, "Payment token generation failed. ERROR=aA321",
+            payment.fetch_token
+        )
+
+    @mock.patch('tbk.webpay.payment.requests')
+    @mock.patch('tbk.webpay.payment.Payment.get_validation_url')
+    @mock.patch('tbk.webpay.payment.Payment.params')
+    def test_fetch_token_with_unapproved_key(self, params, get_validation_url, requests):
+        """
+        payment.fetch_token must post data to get_validation_url and fail when cannot decrypt with ERROR code
+        """
+        payment = Payment(**self.payment_kwargs)
+        response = requests.post.return_value
+        response.is_redirect = False
+        response.status_code = 200
+        response.content = RESPONSE_WITH_ERROR
+        commerce = self.payment_kwargs['commerce']
+        commerce.webpay_decrypt.side_effect = DecryptionError
+
+        self.assertRaisesRegexp(
+            PaymentError, "Payment token generation failed. ERROR=1",
+            payment.fetch_token
+        )
+
+    @mock.patch('tbk.webpay.payment.get_token_from_body')
+    @mock.patch('tbk.webpay.payment.requests')
+    @mock.patch('tbk.webpay.payment.Payment.get_validation_url')
+    @mock.patch('tbk.webpay.payment.Payment.params')
+    def test_fetch_token_with_suspicios_message(self, params, get_validation_url, requests, get_token_from_body):
+        """
+        payment.fetch_token must post data to get_validation_url and fail when cannot decrypt with ERROR code
+        """
+        payment = Payment(**self.payment_kwargs)
+        response = requests.post.return_value
+        response.is_redirect = False
+        response.status_code = 200
+        response.content = "I'm suspicious..."
+        commerce = self.payment_kwargs['commerce']
+        commerce.webpay_decrypt.side_effect = DecryptionError
+        get_token_from_body.return_value = response.content
+
+        self.assertRaisesRegexp(
+            PaymentError, "Suspicious message from server: " + get_token_from_body.return_value,
             payment.fetch_token
         )
 

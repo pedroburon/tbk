@@ -8,12 +8,21 @@ from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.Signature import PKCS1_v1_5
 from Crypto import Random
 
-from tbk.webpay.encryption import Encryption, Decryption, InvalidMessageException
+from tbk.webpay.encryption import Encryption, Decryption, InvalidMessageException, DecryptionError
 
 WEBPAY_KEY = RSA.generate(4096)
 WEBPAY_KEY_PUBLIC = WEBPAY_KEY.publickey()
 COMMERCE_KEY = RSA.generate(2048)
 COMMERCE_KEY_PUBLIC = COMMERCE_KEY.publickey()
+
+RESPONSE_WITH_ERROR = '''
+<HTML>
+<BODY>
+ERROR=1
+TOKEN=0000000000000000000000000000000000000000000000000000000000000000
+</BODY>
+</HTML>
+'''
 
 
 class EncryptionTest(TestCase):
@@ -172,6 +181,22 @@ class DecryptionTest(TestCase):
         self.assertRaisesRegexp(InvalidMessageException, "Invalid message signature",
                                 decryption.decrypt, encrypted)
 
+    @mock.patch('tbk.webpay.encryption.Decryption.get_iv')
+    @mock.patch('tbk.webpay.encryption.Decryption.get_key')
+    @mock.patch('tbk.webpay.encryption.Decryption.get_decrypted_message')
+    @mock.patch('tbk.webpay.encryption.Decryption.get_signature')
+    @mock.patch('tbk.webpay.encryption.Decryption.get_message')
+    @mock.patch('tbk.webpay.encryption.Decryption.verify')
+    def test_decrypt_incorrect_length(self, verify, get_message, get_signature, get_decrypted_message, get_key, get_iv):
+        decryption = Decryption(self.recipient_key, self.sender_key)
+        get_key.side_effect = DecryptionError("Incorrect message length.")
+        raw = Random.new().read(2000)
+        encrypted = base64.b64encode(raw)
+        verify.return_value = False
+
+        self.assertRaisesRegexp(DecryptionError, "Incorrect message length.",
+                                decryption.decrypt, encrypted)
+
     def test_get_iv(self):
         decryption = Decryption(self.recipient_key, self.sender_key)
         raw = Random.new().read(2000)
@@ -188,6 +213,13 @@ class DecryptionTest(TestCase):
         raw += encrypted_key + Random.new().read(2000)
 
         self.assertEqual(key, decryption.get_key(raw))
+
+    def test_get_key_incorrect_length(self):
+        decryption = Decryption(self.recipient_key, self.sender_key)
+        raw = base64.b64decode(RESPONSE_WITH_ERROR)
+
+        self.assertRaisesRegexp(DecryptionError, 'Incorrect message length.',
+                                decryption.get_key, raw)
 
     def test_get_decrypted_message(self):
         recipient_key_bytes = int(self.recipient_key.publickey().n.bit_length() / 8)

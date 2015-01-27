@@ -2,11 +2,11 @@ import os
 
 from six.moves.urllib.parse import urlparse
 
-from .encryption import Encryption, Decryption
+from .encryption import Encryption, Decryption, DecryptionError
 
 from Crypto.PublicKey import RSA
 
-__all__ = ['Commerce']
+__all__ = ['Commerce', 'DecryptionError']
 
 
 TEST_COMMERCE_KEY = """
