@@ -1,10 +1,10 @@
 import os
 
-from six.moves.urllib.parse import urlparse
+import six
+from Crypto.PublicKey import RSA
 
 from .encryption import Encryption, Decryption, DecryptionError
 
-from Crypto.PublicKey import RSA
 
 __all__ = ['Commerce', 'DecryptionError']
 
@@ -180,7 +180,7 @@ class Commerce(object):
             "PREFIJO_CONF_TR = HTML_\n"
             "HTML_TR_NORMAL = http://127.0.0.1/notify\n"
         )
-        confirmation_uri = urlparse(confirmation_url)
+        confirmation_uri = six.moves.urllib.parse.urlparse(confirmation_url)
         webpay_server = "https://certificacion.webpay.cl" if self.testing else "https://webpay.transbank.cl"
         webpay_port = 6443 if self.testing else 443
         return config.format(commerce_id=self.id,

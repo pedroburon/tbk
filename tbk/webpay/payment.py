@@ -3,8 +3,7 @@ import hashlib
 import re
 import decimal
 
-from six.moves.urllib.parse import urlparse
-
+import six
 import requests
 from Crypto.Random import random
 
@@ -141,7 +140,7 @@ class Payment(object):
             raise PaymentError("Success URL required")
         if self.confirmation_url is None:
             raise PaymentError("Confirmation URL required")
-        confirmation_uri = urlparse(self.confirmation_url)
+        confirmation_uri = six.moves.urllib.parse.urlparse(self.confirmation_url)
         if re.match('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', confirmation_uri.hostname) is None:
             raise PaymentError("Confirmation URL host MUST be an IP address")
 
@@ -159,7 +158,7 @@ class Payment(object):
         params += ["TBK_ORDEN_COMPRA=%s" % self.order_id]
         params += ["TBK_CODIGO_COMERCIO=%s" % self.commerce.id]
         params += ["TBK_ID_TRANSACCION=%s" % self.transaction_id]
-        uri = urlparse(self.confirmation_url)
+        uri = six.moves.urllib.parse.urlparse(self.confirmation_url)
         params += ["TBK_URL_CGI_COMERCIO=%s" % uri.path]
         params += ["TBK_SERVIDOR_COMERCIO=%s" % uri.hostname]
         params += ["TBK_PUERTO_COMERCIO=%s" % uri.port]
