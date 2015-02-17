@@ -33,6 +33,8 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+.eggs/
+.eggs/README.txt
 
 # Translations
 *.mo
@@ -54,3 +56,4 @@ docs/_build/
 
 # Sagmor
 sagmor/
+cgi-bin/

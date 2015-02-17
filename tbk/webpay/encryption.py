@@ -1,12 +1,13 @@
 import base64
 import binascii
 
+import six
 from Crypto import Random
 from Crypto.Hash import SHA512
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.Signature import PKCS1_v1_5
 
-__all__ = ['Encryption', 'Decryption', 'InvalidMessageException', 'DecryptionError']
+__all__ = ['Encryption', 'Decryption', 'InvalidMessageException', 'DecryptionError', 'EncryptionError']
 
 
 class Encryption(object):
@@ -15,6 +16,8 @@ class Encryption(object):
         self.recipient_key = recipient_key
 
     def encrypt(self, message):
+        if not isinstance(message, six.binary_type):
+            raise EncryptionError("Message must be binary type.")
         key = self.get_key()
         iv = self.get_iv()
 
@@ -31,9 +34,9 @@ class Encryption(object):
         return signer.sign(hash)
 
     def encrypt_message(self, signed_message, message, key, iv):
-        raw = str(signed_message) + str(message)
+        raw = signed_message + message
         block_size = AES.block_size
-        pad = lambda s: s + (block_size - len(s) % block_size) * chr(block_size - len(s) % block_size)
+        pad = lambda s: s + (block_size - len(s) % block_size) * chr(block_size - len(s) % block_size).encode('utf-8')
         message_to_encrypt = pad(raw)
         cipher = AES.new(key, AES.MODE_CBC, iv)
         return cipher.encrypt(message_to_encrypt)
@@ -56,6 +59,8 @@ class Decryption(object):
         self.recipient_key = recipient_key
 
     def decrypt(self, message):
+        if not isinstance(message, six.binary_type):
+            raise DecryptionError("Message must be binary type.")
         raw = base64.b64decode(message)
 
         iv = self.get_iv(raw)
@@ -112,3 +117,5 @@ class InvalidMessageException(Exception):
 class DecryptionError(Exception):
     pass
 
+class EncryptionError(Exception):
+    pass

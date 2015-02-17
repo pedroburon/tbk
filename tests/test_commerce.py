@@ -1,6 +1,7 @@
 import os
 from unittest import TestCase
 
+import six
 import mock
 from Crypto.PublicKey import RSA
 
@@ -23,14 +24,14 @@ class CommerceTest(TestCase):
         """
         init Commerce raises an exception if no id is given
         """
-        self.assertRaisesRegexp(TypeError, "Commerce needs an id",
+        six.assertRaisesRegex(self, TypeError, "Commerce needs an id",
                                 Commerce, key=Commerce.TEST_COMMERCE_KEY)
 
     def test_no_key_given_no_testing(self):
         """
         init Commerce raises an exception if no key is given and testing is False
         """
-        self.assertRaisesRegexp(TypeError, "Commerce needs a key",
+        six.assertRaisesRegex(self, TypeError, "Commerce needs a key",
                                 Commerce, id="12345", testing=False)
 
     def test_no_key_given_testing(self):
@@ -86,7 +87,7 @@ class CommerceTest(TestCase):
         """
         create_commerce create a commerce with environ TBK_COMMERCE_TESTING=False
         """
-        self.assertRaisesRegexp(ValueError, "create_commerce needs TBK_COMMERCE_ID environment variable",
+        six.assertRaisesRegex(self, ValueError, "create_commerce needs TBK_COMMERCE_ID environment variable",
                                 Commerce.create_commerce)
 
     @mock.patch.dict('tbk.webpay.commerce.os.environ', {
@@ -97,7 +98,7 @@ class CommerceTest(TestCase):
         """
         create_commerce create a commerce with environ TBK_COMMERCE_TESTING=False
         """
-        self.assertRaisesRegexp(ValueError, "create_commerce needs TBK_COMMERCE_KEY environment variable",
+        six.assertRaisesRegex(self, ValueError, "create_commerce needs TBK_COMMERCE_KEY environment variable",
                                 Commerce.create_commerce)
 
     @mock.patch('tbk.webpay.commerce.Commerce.get_commerce_key')
@@ -106,6 +107,23 @@ class CommerceTest(TestCase):
     def test_webpay_encrypt(self, Encryption, get_webpay_key, get_commerce_key):
         commerce = Commerce(id="12345", testing=True)
         message = "decrypted"
+
+        result = commerce.webpay_encrypt(message)
+
+        Encryption.assert_called_once_with(get_commerce_key.return_value,
+                                           get_webpay_key.return_value)
+        encryption = Encryption.return_value
+        encryption.encrypt.assert_called_once_with(message.encode('utf-8'))
+        get_webpay_key.assert_called_once_with()
+        get_commerce_key.assert_called_once_with()
+        self.assertEqual(result, encryption.encrypt.return_value)
+
+    @mock.patch('tbk.webpay.commerce.Commerce.get_commerce_key')
+    @mock.patch('tbk.webpay.commerce.Commerce.get_webpay_key')
+    @mock.patch('tbk.webpay.commerce.Encryption')
+    def test_webpay_encrypt_binary(self, Encryption, get_webpay_key, get_commerce_key):
+        commerce = Commerce(id="12345", testing=True)
+        message = b"decrypted"
 
         result = commerce.webpay_encrypt(message)
 
@@ -123,6 +141,23 @@ class CommerceTest(TestCase):
     def test_webpay_decrypt(self, Decryption, get_webpay_key, get_commerce_key):
         commerce = Commerce(id=12345, testing=True)
         message = "encrypted"
+
+        result = commerce.webpay_decrypt(message)
+
+        Decryption.assert_called_once_with(get_commerce_key.return_value,
+                                           get_webpay_key.return_value)
+        decryption = Decryption.return_value
+        decryption.decrypt.assert_called_once_with(message.encode('utf-8'))
+        get_webpay_key.assert_called_once_with()
+        get_commerce_key.assert_called_once_with()
+        self.assertEqual(result, decryption.decrypt.return_value)
+
+    @mock.patch('tbk.webpay.commerce.Commerce.get_commerce_key')
+    @mock.patch('tbk.webpay.commerce.Commerce.get_webpay_key')
+    @mock.patch('tbk.webpay.commerce.Decryption')
+    def test_webpay_decrypt_binary(self, Decryption, get_webpay_key, get_commerce_key):
+        commerce = Commerce(id=12345, testing=True)
+        message = b"encrypted"
 
         result = commerce.webpay_decrypt(message)
 
