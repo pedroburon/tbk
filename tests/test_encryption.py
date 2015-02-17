@@ -1,6 +1,9 @@
+from __future__ import unicode_literals
+
 import base64
 from unittest import TestCase
 
+import six
 import mock
 from Crypto.Hash import SHA512
 from Crypto.PublicKey import RSA
@@ -8,7 +11,7 @@ from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.Signature import PKCS1_v1_5
 from Crypto import Random
 
-from tbk.webpay.encryption import Encryption, Decryption, InvalidMessageException, DecryptionError
+from tbk.webpay.encryption import Encryption, Decryption, InvalidMessageException, DecryptionError, EncryptionError
 
 WEBPAY_KEY = RSA.generate(4096)
 WEBPAY_KEY_PUBLIC = WEBPAY_KEY.publickey()
@@ -38,6 +41,13 @@ class EncryptionTest(TestCase):
         self.assertEqual(self.sender_key, encryption.sender_key)
         self.assertEqual(self.recipient_key, encryption.recipient_key)
 
+    def test_encrypt_not_binary(self):
+        message = "not binary"
+        encryption = Encryption(self.sender_key, self.recipient_key)
+
+        six.assertRaisesRegex(self, EncryptionError, "Message must be binary.",
+                                encryption.encrypt, message)
+
     @mock.patch('tbk.webpay.encryption.Encryption.get_iv')
     @mock.patch('tbk.webpay.encryption.Encryption.get_key')
     @mock.patch('tbk.webpay.encryption.Encryption.encrypt_key')
@@ -46,7 +56,7 @@ class EncryptionTest(TestCase):
     def test_encrypt(self, sign_message, encrypt_message, encrypt_key, get_key, get_iv):
         message = Random.new().read(2000)
         encryption = Encryption(self.sender_key, self.recipient_key)
-        sender_key_bytes = self.sender_key.publickey().n.bit_length() / 8
+        sender_key_bytes = int(self.sender_key.publickey().n.bit_length() / 8)
         encrypt_message.return_value = Random.new().read(len(message))
         encrypt_key.return_value = Random.new().read(sender_key_bytes)
         get_iv.return_value = Random.new().read(16)
@@ -119,7 +129,7 @@ class EncryptionTest(TestCase):
         unpad = lambda s: s[:-ord(s[len(s) - 1:])]
         decrypted = unpad(cipher.decrypt(encrypted))
 
-        self.assertEqual(decrypted, str(signed_message) + str(message))
+        self.assertEqual(decrypted, signed_message + message)
 
 
 class DecryptionTest(TestCase):
@@ -166,6 +176,13 @@ class DecryptionTest(TestCase):
         verify.assert_called_once_with(signature, message)
         hexlify.assert_called_once_with(signature)
 
+    def test_decrypt_not_binary(self):
+        decryption = Decryption(self.recipient_key, self.sender_key)
+        message = "not binary"
+
+        six.assertRaisesRegex(self, DecryptionError, "Message must be binary.",
+                                decryption.decrypt, message)
+
     @mock.patch('tbk.webpay.encryption.Decryption.get_iv')
     @mock.patch('tbk.webpay.encryption.Decryption.get_key')
     @mock.patch('tbk.webpay.encryption.Decryption.get_decrypted_message')
@@ -178,7 +195,7 @@ class DecryptionTest(TestCase):
         encrypted = base64.b64encode(raw)
         verify.return_value = False
 
-        self.assertRaisesRegexp(InvalidMessageException, "Invalid message signature",
+        six.assertRaisesRegex(self, InvalidMessageException, "Invalid message signature",
                                 decryption.decrypt, encrypted)
 
     @mock.patch('tbk.webpay.encryption.Decryption.get_iv')
@@ -194,7 +211,7 @@ class DecryptionTest(TestCase):
         encrypted = base64.b64encode(raw)
         verify.return_value = False
 
-        self.assertRaisesRegexp(DecryptionError, "Incorrect message length.",
+        six.assertRaisesRegex(self, DecryptionError, "Incorrect message length.",
                                 decryption.decrypt, encrypted)
 
     def test_get_iv(self):
@@ -218,7 +235,7 @@ class DecryptionTest(TestCase):
         decryption = Decryption(self.recipient_key, self.sender_key)
         raw = base64.b64decode(RESPONSE_WITH_ERROR)
 
-        self.assertRaisesRegexp(DecryptionError, 'Incorrect message length.',
+        six.assertRaisesRegex(self, DecryptionError, 'Incorrect message length.',
                                 decryption.get_key, raw)
 
     def test_get_decrypted_message(self):
@@ -227,9 +244,9 @@ class DecryptionTest(TestCase):
         iv = Random.new().read(16)
         key = Random.new().read(32)
         encrypted_key = Random.new().read(recipient_key_bytes)
-        message = "a" * 2000
+        message = ("a" * 2000).encode('utf-8')
         block_size = AES.block_size
-        pad = lambda s: s + (block_size - len(s) % block_size) * chr(block_size - len(s) % block_size)
+        pad = lambda s: s + (block_size - len(s) % block_size) * chr(block_size - len(s) % block_size).encode('utf-8')
         message_to_encrypt = pad(message)
         cipher = AES.new(key, mode=AES.MODE_CBC, IV=iv)
         encrypted_message = cipher.encrypt(message_to_encrypt)
@@ -260,6 +277,7 @@ class DecryptionTest(TestCase):
     def test_verify_true(self):
         decryption = Decryption(self.recipient_key, self.sender_key)
         message = 'ERROR=aA321\nTOKEN=e975ffc4f0605ddf3afc299eee6aeffb59efba24769548acf58e34a89ae4e228\n'
+        message = message.encode('utf-8')
         hash = SHA512.new(message)
         signer = PKCS1_v1_5.new(self.sender_key_private)
         signature = signer.sign(hash)
@@ -270,6 +288,8 @@ class DecryptionTest(TestCase):
         decryption = Decryption(self.recipient_key, self.sender_key)
         wrong_message = 'ERROR=0\nTOKEN=e975ffc4f0605ddf3afc299eee6aeffb59efba24769548acf58e34a89ae4e228\n'
         message = 'ERROR=aA321\nTOKEN=e975ffc4f0605ddf3afc299eee6aeffb59efba24769548acf58e34a89ae4e228\n'
+        wrong_message = wrong_message.encode('utf-8')
+        message = message.encode('utf-8')
         hash = SHA512.new(wrong_message)
         signer = PKCS1_v1_5.new(self.sender_key_private)
         signature = signer.sign(hash)

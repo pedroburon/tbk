@@ -3,6 +3,7 @@ import sys
 from decimal import Decimal, ROUND_DOWN
 from unittest import TestCase
 
+import six
 import mock
 
 from tbk.webpay import TBK_VERSION_KCC
@@ -252,7 +253,7 @@ class PaymentTest(TestCase):
         response.status_code = 500
         response.is_redirect = False
 
-        self.assertRaisesRegexp(
+        six.assertRaisesRegex(self, 
             PaymentError, "Payment token generation failed",
             payment.fetch_token
         )
@@ -273,7 +274,7 @@ class PaymentTest(TestCase):
         signature = "signature" * 20
         commerce.webpay_decrypt.return_value = decrypted, signature
 
-        self.assertRaisesRegexp(
+        six.assertRaisesRegex(self, 
             PaymentError, "Payment token generation failed. ERROR=aA321",
             payment.fetch_token
         )
@@ -293,7 +294,7 @@ class PaymentTest(TestCase):
         commerce = self.payment_kwargs['commerce']
         commerce.webpay_decrypt.side_effect = DecryptionError
 
-        self.assertRaisesRegexp(
+        six.assertRaisesRegex(self, 
             PaymentError, "Payment token generation failed. ERROR=1",
             payment.fetch_token
         )
@@ -315,7 +316,7 @@ class PaymentTest(TestCase):
         commerce.webpay_decrypt.side_effect = DecryptionError
         get_token_from_body.return_value = response.content
 
-        self.assertRaisesRegexp(
+        six.assertRaisesRegex(self, 
             PaymentError, "Suspicious message from server: " + get_token_from_body.return_value,
             payment.fetch_token
         )
@@ -501,7 +502,7 @@ class PaymentTest(TestCase):
         payment = Payment(**self.payment_kwargs)
         payment.commerce = None
 
-        self.assertRaisesRegexp(
+        six.assertRaisesRegex(self, 
             PaymentError, "Commerce required",
             payment.verify
         )
@@ -510,19 +511,19 @@ class PaymentTest(TestCase):
         payment = Payment(**self.payment_kwargs)
         payment.amount = None
 
-        self.assertRaisesRegexp(
+        six.assertRaisesRegex(self, 
             PaymentError, "Invalid amount None",
             payment.verify
         )
         payment.amount = Decimal("0")
-        self.assertRaisesRegexp(
+        six.assertRaisesRegex(self, 
             PaymentError, "Invalid amount 0",
             payment.verify
         )
 
         payment.amount = Decimal("-1000")
 
-        self.assertRaisesRegexp(
+        six.assertRaisesRegex(self, 
             PaymentError, "Invalid amount -100",
             payment.verify
         )
@@ -531,7 +532,7 @@ class PaymentTest(TestCase):
         payment = Payment(**self.payment_kwargs)
         payment.order_id = None
 
-        self.assertRaisesRegexp(
+        six.assertRaisesRegex(self, 
             PaymentError, "Order ID required",
             payment.verify
         )
@@ -540,7 +541,7 @@ class PaymentTest(TestCase):
         payment = Payment(**self.payment_kwargs)
         payment.success_url = None
 
-        self.assertRaisesRegexp(
+        six.assertRaisesRegex(self, 
             PaymentError, "Success URL required",
             payment.verify
         )
@@ -549,7 +550,7 @@ class PaymentTest(TestCase):
         payment = Payment(**self.payment_kwargs)
         payment.confirmation_url = None
 
-        self.assertRaisesRegexp(
+        six.assertRaisesRegex(self, 
             PaymentError, "Confirmation URL required",
             payment.verify
         )
@@ -558,7 +559,7 @@ class PaymentTest(TestCase):
         payment = Payment(**self.payment_kwargs)
         payment.confirmation_url = "http://example.org/confirmation"
 
-        self.assertRaisesRegexp(
+        six.assertRaisesRegex(self, 
             PaymentError, "Confirmation URL host MUST be an IP address",
             payment.verify
         )

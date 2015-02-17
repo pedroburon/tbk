@@ -134,13 +134,16 @@ class Commerce(object):
         commerce_key = self.get_commerce_key()
         webpay_key = self.get_webpay_key()
         decryption = Decryption(commerce_key, webpay_key)
-        decrypted = decryption.decrypt(encrypted)
-        return decrypted
+        if not isinstance(encrypted, six.binary_type):
+            encrypted = encrypted.encode('utf-8')
+        return decryption.decrypt(encrypted)
 
     def webpay_encrypt(self, decrypted):
         commerce_key = self.get_commerce_key()
         webpay_key = self.get_webpay_key()
         encryption = Encryption(commerce_key, webpay_key)
+        if not isinstance(decrypted, six.binary_type):
+            decrypted = decrypted.encode('utf-8')
         return encryption.encrypt(decrypted)
 
     def get_webpay_key(self):

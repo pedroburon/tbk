@@ -304,7 +304,7 @@ class ConfirmationPayloadTest(TestCase):
         year = today.year
         santiago = pytz.timezone('America/Santiago')
         transaction_date = datetime.datetime(year, 12, 31, 11, 59, 59)
-        accountable_date = datetime.datetime(year + 1, 01, 02)
+        accountable_date = datetime.datetime(year + 1, 1, 2)
         expected = santiago.localize(accountable_date)
         self.assert_attribute(
             expected,
