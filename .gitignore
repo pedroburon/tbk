@@ -34,6 +34,7 @@ htmlcov/
 nosetests.xml
 coverage.xml
 .eggs/
+.eggs/README.txt
 
 # Translations
 *.mo
