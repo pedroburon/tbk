@@ -26,7 +26,21 @@ class BaseHandler(object):
         '''
         raise NotImplementedError("Logging Handler must implement event_confirmation")
 
+    def event_error(self, date, time, pid, commerce_id, transaction_id, request_ip, order_id):
+        '''Record the error event.
+
+        Official handler writes this information to TBK_EVN%Y%m%d file.
+        '''
+        raise NotImplementedError("Logging Handler must implement event_confirmation")
+
     def log_confirmation(self, payload, commerce_id):
+        '''Record confirmation event in another way (why?).
+
+        Official handler writes this information to tbk_bitacora_TR_NORMAL_%m%d file.
+        '''
+        raise NotImplementedError("Logging Handler must implement log_confirmation")
+
+    def log_error(self, payload, commerce_id):
         '''Record confirmation event in another way (why?).
 
         Official handler writes this information to tbk_bitacora_TR_NORMAL_%m%d file.
@@ -42,7 +56,13 @@ class NullHandler(BaseHandler):
     def event_confirmation(self, **kwargs):
         pass
 
+    def event_error(self, **kwargs):
+        pass
+
     def log_confirmation(self, **kwargs):
+        pass
+
+    def log_error(self, **kwargs):
         pass
 
 
@@ -81,6 +101,23 @@ class Logger(object):
             order_id=confirmation.order_id,
         )
         self.handler.log_confirmation(
+            payload=confirmation.payload,
+            commerce_id=confirmation.commerce.id
+        )
+
+    def error(self, confirmation):
+        santiago = pytz.timezone('America/Santiago')
+        now = santiago.localize(datetime.datetime.now())
+        self.handler.event_error(
+            date=now.strftime(LOG_DATE_FORMAT),
+            time=now.strftime(LOG_TIME_FORMAT),
+            pid=os.getpid(),
+            commerce_id=confirmation.commerce.id,
+            transaction_id=confirmation.payload.transaction_id,
+            request_ip=confirmation.request_ip,
+            order_id=confirmation.order_id,
+        )
+        self.handler.log_error(
             payload=confirmation.payload,
             commerce_id=confirmation.commerce.id
         )

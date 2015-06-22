@@ -15,9 +15,14 @@ def event_payment_format(**kwargs):
 def event_confirmation_format(**kwargs):
     return CONFIRMATION_FORMAT.format(**kwargs)
 
+def event_error_format(**kwargs):
+    return ERROR_FORMAT.format(**kwargs)
 
 def log_confirmation_format(**kwargs):
     return JOURNAL_FORMAT % kwargs
+
+def log_error_format(**kwargs):
+    return JOURNAL_ERROR_FORMAT % kwargs
 
 
 EVENTS_LOG_FILE_NAME_FORMAT = "TBK_EVN%s.log"
@@ -39,11 +44,20 @@ class WebpayOfficialHandler(object):
         with closing(self.events_log_file) as events_log_file:
             events_log_file.write(event_confirmation_format(**kwargs))
 
+    def event_error(self, **kwargs):
+        with closing(self.events_log_file) as events_log_file:
+            events_log_file.write(event_error_format(**kwargs))
+
     def log_confirmation(self, payload, commerce_id):
         format_params = {'commerce_id': commerce_id}
         format_params.update(**payload.data)
         with closing(self.journal_log_file) as journal_log_file:
             journal_log_file.write(log_confirmation_format(**format_params))
+
+    def log_confirmation(self, payload, commerce_id):
+        with closing(self.events_log_file) as events_log_file:
+            events_log_file.write(log_error_format(**kwargs))
+
 
     @property
     def events_log_file(self):
@@ -93,6 +107,8 @@ CONFIRMATION_FORMAT = (
     "{transaction_id:<10};{pid:>12};   ;resultado ;{order_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Todo OK\n"  # noqa
 )
 
+ERROR_FORMAT = CONFIRMATION_FORMAT # replace with error format
+
 JOURNAL_FORMAT = (
     "ACK; "
     "TBK_ORDEN_COMPRA=%(TBK_ORDEN_COMPRA)s; "
@@ -112,3 +128,6 @@ JOURNAL_FORMAT = (
     "TBK_VCI=%(TBK_VCI)s; "
     "TBK_MAC=%(TBK_MAC)s\n"
 )
+
+JOURNAL_ERROR_FORMAT = JOURNAL_FORMAT # replace with error format
+

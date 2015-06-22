@@ -169,7 +169,6 @@ class Confirmation(object):
         self.commerce = commerce
         self.request_ip = request_ip
         self.payload = ConfirmationPayload(self.parse(data['TBK_PARAM']))
-        logger.confirmation(self)
 
     def parse(self, tbk_param):
         decrypted_params, signature = self.commerce.webpay_decrypt(tbk_param)
@@ -179,6 +178,13 @@ class Confirmation(object):
             params[line[:index]] = line[index + 1:]
         params['TBK_MAC'] = signature
         return params
+
+    def validate_order(self, validate_func, check_timeout=True):
+        if self.is_success(check_timeout) and validate_func(self.payload):
+            logger.confirmation(self)
+            return True
+        logger.error(self)
+        return False
 
     def is_success(self, check_timeout=True):
         '''
