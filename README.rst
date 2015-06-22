@@ -96,11 +96,15 @@ Then to confirm payment, use an endpoint with:
             data=request.POST
         )
 
-        # validate_confirmation validate if order_id and amount are valid.
-        if confirmation.is_success() and validate_confirmation(confirmation.order_id, confirmation.amount):
+        if confirmation.validate_order(validate):
             return HttpResponse(commerce.acknowledge)
 
         return HttpResponse(commerce.reject)
+
+    def validate(payload):
+        # validate payload.order_id and payload.amount
+        # do something
+        return True # if validates
 
 
 About webpay communication protocol: http://sagmor.com/rants/technical/webpay-communication-protocol/
