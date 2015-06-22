@@ -54,7 +54,7 @@ class WebpayOfficialHandler(object):
         with closing(self.journal_log_file) as journal_log_file:
             journal_log_file.write(log_confirmation_format(**format_params))
 
-    def log_confirmation(self, payload, commerce_id):
+    def log_error(self, payload, commerce_id):
         with closing(self.events_log_file) as events_log_file:
             events_log_file.write(log_error_format(**kwargs))
 
