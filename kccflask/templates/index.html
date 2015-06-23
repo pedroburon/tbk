@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Redireccionando</title>
+  </head>
+  <body>
+    <form method="post" action="/tbk_bp_pago.cgi" id="webpay_normal_form">
+<input id="id_TBK_TIPO_TRANSACCION" name="TBK_TIPO_TRANSACCION" type="hidden" value="TR_NORMAL">
+<p><label for="id_TBK_MONTO">Tbk monto:</label> <input id="id_TBK_MONTO" name="TBK_MONTO" type="numeric"  /></p>
+<p><label for="id_TBK_ORDEN_COMPRA">Tbk orden compra:</label> <input id="id_TBK_ORDEN_COMPRA" maxlength="26" name="TBK_ORDEN_COMPRA" type="text"  /></p>
+<p><label for="id_TBK_ID_SESION">Tbk id sesion:</label> <input id="id_TBK_ID_SESION" maxlength="61" name="TBK_ID_SESION" type="text" /></p>
+<p><label for="id_TBK_URL_EXITO">Tbk url exito:</label> <input id="id_TBK_URL_EXITO" maxlength="256" name="TBK_URL_EXITO" type="url"  /></p>
+<p><label for="id_TBK_URL_FRACASO">Tbk url fracaso:</label> <input id="id_TBK_URL_FRACASO" maxlength="256" name="TBK_URL_FRACASO" type="url" /></p>
+      <input type="submit" />
+    </form>
+  </body>
+</html>

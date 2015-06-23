@@ -130,3 +130,4 @@ logger = Logger(NullHandler())
 
 def configure_logger(handler):
     logger.set_handler(handler)
+    return logger

@@ -25,8 +25,9 @@ class Encryption(object):
 
         signed_message = self.sign_message(message)
         encrypted_message = self.encrypt_message(signed_message, message, key, iv)
+        encrypt = base64.encodestring(iv + encrypted_key + encrypted_message)
 
-        return base64.b64encode(iv + encrypted_key + encrypted_message)
+        return encrypt
 
     def sign_message(self, message):
         hash = SHA512.new(message)
