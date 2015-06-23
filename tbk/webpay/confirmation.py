@@ -178,11 +178,24 @@ class Confirmation(object):
             params[line[:index]] = line[index + 1:]
         params['TBK_MAC'] = signature
         return params
-
-    def validate_order(self, validate_func, check_timeout=True):
-        if self.is_success(check_timeout) and validate_func(self.payload):
+    
+    
+    def get_webpay_response(self, validate_func, check_timeout=True):
+        if self.is_success(check_timeout): # TBK_RESPUESTA == 0
+          if validate_func(self.payload):
             logger.confirmation(self)
-            return True
+          else:
+            logger.error(self)
+            return self.commerce.reject
+        else: # TBK_RESPUESTA != 0
+            logger.confirmation(self)
+        return self.commerce.acknowledge
+    
+    def validate_order(self, validate_func, check_timeout=True):
+        if self.is_success(check_timeout):
+            if validate_func(self.payload):
+                logger.confirmation(self)
+                return True
         if self.is_valid(check_timeout):
             logger.confirmation(self)
             return False
