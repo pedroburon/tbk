@@ -65,8 +65,10 @@ def resultado():
         content = response.content
         if confirmation.is_success():
             if content == 'ACEPTADO':
-                logger.error(confirmation)
+                logger.confirmation(confirmation)
                 return commerce.acknowledge
+            logger.error(confirmation)
+        else:
             logger.confirmation(confirmation)
     return commerce.reject
 
