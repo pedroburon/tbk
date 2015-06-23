@@ -62,7 +62,7 @@ If you want to set the official webpay log (for certification issues):
     from tbk.webpay.logging import configure_logger
     from tbk.webpay.logging.official import WebpayOfficialHandler
 
-    configure_logger(WebpayOfficialHandler(LOG_BASE_PATH))
+    configure_logger(WebpayOfficialHandler(LOG_BASE_PATH), confirmation_url='http://127.0.0.1/webpay/confirm')
 
 Create a new payment and redirect user.
 

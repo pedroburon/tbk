@@ -33,8 +33,9 @@ JOURNAL_LOG_FILE_DATE_FORMAT = "%m%d"
 
 class WebpayOfficialHandler(object):
 
-    def __init__(self, path=None):
+    def __init__(self, path=None, confirmation_url='http://127.0.0.1/webpay/confirm/'):
         self.path = path
+        self.confirmation_url = confirmation_url
 
     def event_payment(self, **kwargs):
         with closing(self.events_log_file) as events_log_file:
@@ -49,13 +50,13 @@ class WebpayOfficialHandler(object):
             events_log_file.write(event_error_format(**kwargs))
 
     def log_confirmation(self, payload, commerce_id):
-        format_params = {'commerce_id': commerce_id}
+        format_params = {'commerce_id': commerce_id, 'confirmation_url': self.confirmation_url}
         format_params.update(**payload.data)
         with closing(self.journal_log_file) as journal_log_file:
             journal_log_file.write(log_confirmation_format(**format_params))
 
     def log_error(self, payload, commerce_id):
-        format_params = {'commerce_id': commerce_id}
+        format_params = {'commerce_id': commerce_id, 'confirmation_url': self.confirmation_url}
         format_params.update(**payload.data)
         with closing(self.journal_log_file) as journal_log_file:
             journal_log_file.write(log_error_format(**format_params))
@@ -100,10 +101,10 @@ CONFIRMATION_FORMAT = (
     "          ;{pid:>12};   ;resultado ;Desencriptando                          ;{date:<14};{time:<6};{request_ip:<15};OK ;                    ;TBK_PARAM desencriptado\n"  # noqa
     "          ;{pid:>12};   ;resultado ;Validacion                              ;{date:<14};{time:<6};{request_ip:<15};OK ;                    ;Entidad emisora de los datos validada\n"  # noqa
     "          ;{pid:>12};   ;resultado ;{order_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;                    ;Parseo de los datos\n"  # noqa
-    "          ;{pid:>12};   ;resultado ;{order_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;                    ;http://127.0.0.1/productos/confirmation/\n"  # noqa
+    "          ;{pid:>12};   ;resultado ;{order_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;                    ;{confirmation_url}\n"  # noqa
     "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};conectandose al port :(80)\n"  # noqa
     "{transaction_id:<10};{pid:>12};   ;resultado ;logro abrir_conexion                    ;{date:<14};{time:<6};{request_ip:<15}; 0 ;{commerce_id:<20};Abrio socket para conex-com\n"  # noqa
-    "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};POST a url http://127.0.0.1/productos/confirmation/\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};POST a url {confirmation_url}\n"  # noqa
     "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};mensaje enviado\n"  # noqa
     "          ;{pid:>12};   ;check_mac ;                                        ;{date:<14};{time:<6};EMPTY          ;OK ;                    ;Todo OK\n"  # noqa
     "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};Llego ACK del Comercio\n"  # noqa
@@ -116,10 +117,10 @@ ERROR_FORMAT = (
     "          ;{pid:>12};   ;resultado ;Desencriptando                          ;{date:<14};{time:<6};{request_ip:<15};OK ;                    ;TBK_PARAM desencriptado\n"  # noqa
     "          ;{pid:>12};   ;resultado ;Validacion                              ;{date:<14};{time:<6};{request_ip:<15};OK ;                    ;Entidad emisora de los datos validada\n"  # noqa
     "          ;{pid:>12};   ;resultado ;{order_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;                    ;Parseo de los datos\n"  # noqa
-    "          ;{pid:>12};   ;resultado ;{order_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;                    ;http://127.0.0.1/productos/confirmation/\n"  # noqa
+    "          ;{pid:>12};   ;resultado ;{order_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;                    ;{confirmation_url}\n"  # noqa
     "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};conectandose al port :(80)\n"  # noqa
     "{transaction_id:<10};{pid:>12};   ;resultado ;logro abrir_conexion                    ;{date:<14};{time:<6};{request_ip:<15}; 0 ;{commerce_id:<20};Abrio socket para conex-com\n"  # noqa
-    "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};POST a url http://127.0.0.1/productos/confirmation/\n"  # noqa
+    "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};POST a url {confirmation_url}\n"  # noqa
     "{transaction_id:<10};{pid:>12};   ;transacc  ;{transaction_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;{commerce_id:<20};mensaje enviado\n"  # noqa
     "          ;{pid:>12};   ;check_mac ;                                        ;{date:<14};{time:<6};EMPTY          ;OK ;                    ;Todo OK\n"  # noqa
     "{transaction_id:<10};{pid:>12};   ;resultado ;{order_id:<40};{date:<14};{time:<6};{request_ip:<15};OK ;                    ;tienda NO acepto transaccion\n"  # noqa
