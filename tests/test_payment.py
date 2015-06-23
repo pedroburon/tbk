@@ -563,3 +563,21 @@ class PaymentTest(TestCase):
             PaymentError, "Confirmation URL host MUST be an IP address",
             payment.verify
         )
+
+    def test_error_page(self):
+        with open(os.path.join(os.path.dirname(__file__), 'fixtures', 'payment_error.txt')) as f:
+            error_page = f.read()
+        self.assertEqual(error_page, Payment.ERROR_PAGE)
+
+    def test_get_form(self):
+        payment = Payment(**self.payment_kwargs)
+        commerce = self.payment_kwargs['commerce']
+        commerce.id = '597026007976'
+        commerce.webpay_key_id = '101'
+        commerce.webpay_encrypt.return_value = 'param-mock'
+
+        with open(os.path.join(os.path.dirname(__file__), 'fixtures', 'payment_form.txt')) as f:
+            payment_form = f.read()
+
+        self.assertEqual(payment_form, payment.get_form())
+

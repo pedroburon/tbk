@@ -20,6 +20,27 @@ USER_AGENT = "TBK/%(TBK_VERSION_KCC)s (Python/%(PYTHON_VERSION)s)" % {
     'PYTHON_VERSION': PYTHON_VERSION
 }
 
+PAYMENT_FORM = ('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">'
+                '<html><head><title>WebPay</title><meta name="GENERATOR" content="www.orangepeople.cl" />'
+                '<meta name="AUTHOR" content="Orange People Software LTDA" />'
+                '<link rel="stylesheet" type="text/css" href="https://webpay.transbank.cl/images/documento.css" />'
+                '<script language="javascript" charset="iso-8859-1" type="text/javascript" '
+                'src="https://webpay.transbank.cl/images/documento.js"></script></head>'
+                '<body onload="if (document.f != null) document.f.submit();">'
+                '<div id="container"><div id="content"><div id="espaciar">'
+                '<img src="https://webpay.transbank.cl/images/webpay.gif" alt="WebPay" /></div>'
+                '<div id="barra" style="visibility:visible;">'
+                '<img id="espera" src="https://webpay.transbank.cl/images/barra.gif" alt="Espere por favor" /></div>'
+                '<div id="espaciar"><div id="err_div" style="visibility:hidden;">'
+                '<h1>ERROR: No se ha podido establecer la conexi&oacute;n</h1>'
+                '<a href="javascript:history.go(-2)">Volver al comercio</a></div></div></div></div>'
+                '<form name="f" method="POST" action="https://certificacion.webpay.cl:6443/filtroUnificado/bp_revision.cgi">\n'
+                '<input type="hidden" name="TBK_PARAM" value="{TBK_PARAM}">\n'
+                '<input type="hidden" name="TBK_VERSION_KCC" value="{TBK_VERSION_KCC}">\n'
+                '<input type="hidden" name="TBK_CODIGO_COMERCIO" value="{TBK_CODIGO_COMERCIO}">\n'
+                '<input type="hidden" name="TBK_KEY_ID" value="{TBK_KEY_ID}">\n'
+                '</form>\n</body>\n</html>\n')
+
 
 def get_token_from_body(body):
     TOKEN = 'TOKEN='
@@ -46,6 +67,23 @@ class Payment(object):
     _token = None
     _params = None
     _transaction_id = None
+
+    ERROR_PAGE = ('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"><html>'
+                  '<head><title>WebPay</title><meta name="GENERATOR" content="www.orangepeople.cl" />'
+                  '<meta name="AUTHOR" content="Orange People Software LTDA" />'
+                  '<link rel="stylesheet" type="text/css" href="https://webpay.transbank.cl/images/documento.css" />'
+                  '<script language="javascript" charset="iso-8859-1" type="text/javascript" '
+                  'src="https://webpay.transbank.cl/images/documento.js"></script>'
+                  '</head><body onload="if (document.f != null) document.f.submit();">'
+                  '<div id="container"><div id="content"><div id="espaciar">'
+                  '<img src="https://webpay.transbank.cl/images/webpay.gif" alt="WebPay" /></div>'
+                  '<div id="barra" style="visibility:visible;">'
+                  '<img id="espera" src="https://webpay.transbank.cl/images/barra.gif" alt="Espere por favor" /></div>'
+                  '<div id="espaciar"><div id="err_div" style="visibility:hidden;">'
+                  '<h1>ERROR: No se ha podido establecer la conexi&oacute;n</h1>'
+                  '<a href="javascript:history.go(-2)">Volver al comercio</a>'
+                  '</div></div></div></div><script language=\'JavaScript\'>'
+                  'ShowContent(\'err_div\');NoShowContent(\'barra\');</script><br /><!-- Codigo Error: 1 --><br />')
 
     def __init__(self, request_ip, amount,
                  order_id, success_url, confirmation_url,
@@ -186,6 +224,14 @@ class Payment(object):
         params += ["TBK_URL_FRACASO=%s" % self.failure_url]
         params += ["TBK_TIPO_TRANSACCION=TR_NORMAL"]
         return splitter.join(params)
+
+    def get_form(self):
+        return PAYMENT_FORM.format(
+            TBK_PARAM=self.params,
+            TBK_VERSION_KCC=TBK_VERSION_KCC,
+            TBK_CODIGO_COMERCIO=self.commerce.id,
+            TBK_KEY_ID=self.commerce.webpay_key_id
+        )
 
 
 class PaymentError(Exception):
