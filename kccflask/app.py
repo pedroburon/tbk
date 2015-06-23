@@ -63,12 +63,11 @@ def resultado():
         confirmation = Confirmation(request.form)
         response = requests.post(RESULT_URL, confirmation.payload.data)
         content = response.content
-        if content == 'ACEPTADO':
-            logger.error(confirmation)
-            return commerce.acknowledge
-        elif content == 'RECHAZADO':
+        if confirmation.is_success():
+            if content == 'ACEPTADO':
+                logger.error(confirmation)
+                return commerce.acknowledge
             logger.confirmation(confirmation)
-            return commerce.reject
     return commerce.reject
 
 
