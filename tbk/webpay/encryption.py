@@ -9,6 +9,8 @@ from Crypto.Signature import PKCS1_v1_5
 
 __all__ = ['Encryption', 'Decryption', 'InvalidMessageException', 'DecryptionError', 'EncryptionError']
 
+six.add_move(six.MovedAttribute('encodebytes', 'base64', 'base64', old_attr='encodestring', new_attr='encodebytes'))
+
 
 class Encryption(object):
     def __init__(self, sender_key, recipient_key):
@@ -25,7 +27,7 @@ class Encryption(object):
 
         signed_message = self.sign_message(message)
         encrypted_message = self.encrypt_message(signed_message, message, key, iv)
-        encrypt = base64.encodestring(iv + encrypted_key + encrypted_message)
+        encrypt = six.moves.encodebytes(iv + encrypted_key + encrypted_message)
 
         return encrypt
 
@@ -117,6 +119,7 @@ class InvalidMessageException(Exception):
 
 class DecryptionError(Exception):
     pass
+
 
 class EncryptionError(Exception):
     pass

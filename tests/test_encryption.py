@@ -155,7 +155,7 @@ class DecryptionTest(TestCase):
     def test_decrypt(self, verify, get_message, get_signature, get_decrypted_message, get_key, get_iv, hexlify):
         decryption = Decryption(self.recipient_key, self.sender_key)
         raw = Random.new().read(2000)
-        encrypted = base64.encodestring(raw)
+        encrypted = six.moves.encodebytes(raw)
         message = get_message.return_value
         signature = get_signature.return_value
         hexlify_signature = hexlify.return_value
@@ -192,7 +192,7 @@ class DecryptionTest(TestCase):
     def test_decrypt_invalid(self, verify, get_message, get_signature, get_decrypted_message, get_key, get_iv):
         decryption = Decryption(self.recipient_key, self.sender_key)
         raw = Random.new().read(2000)
-        encrypted = base64.encodestring(raw)
+        encrypted = six.moves.encodebytes(raw)
         verify.return_value = False
 
         six.assertRaisesRegex(self, InvalidMessageException, "Invalid message signature",
@@ -208,7 +208,7 @@ class DecryptionTest(TestCase):
         decryption = Decryption(self.recipient_key, self.sender_key)
         get_key.side_effect = DecryptionError("Incorrect message length.")
         raw = Random.new().read(2000)
-        encrypted = base64.encodestring(raw)
+        encrypted = six.moves.encodebytes(raw)
         verify.return_value = False
 
         six.assertRaisesRegex(self, DecryptionError, "Incorrect message length.",

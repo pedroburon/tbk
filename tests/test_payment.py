@@ -1,3 +1,4 @@
+
 import os
 import sys
 from decimal import Decimal, ROUND_DOWN
@@ -413,15 +414,15 @@ class PaymentTest(TestCase):
         payment._transaction_id = 123456789
         get_raw_params_file_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'raw_params.txt')
         with open(get_raw_params_file_path, 'r') as get_raw_params_file:
-            get_raw_params = get_raw_params_file.read()
+            raw_params = get_raw_params_file.read().encode('utf-8')
 
             result = payment.get_raw_params()
 
             h.hexdigest.assert_called_once_with()
             h.update.assert_any_call(payment.get_raw_params('&', False))
-            h.update.assert_any_call(str(payment.commerce.id))
-            h.update.assert_any_call("webpay")
-            self.assertEqual(get_raw_params, result)
+            h.update.assert_any_call(str(payment.commerce.id).encode('utf-8'))
+            h.update.assert_any_call(b"webpay")
+            self.assertEqual(raw_params, result)
 
     def test_get_raw_params_sharp_no_pseudomac(self):
         """
@@ -434,9 +435,9 @@ class PaymentTest(TestCase):
         payment._transaction_id = 123456789
         get_raw_params_file_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'raw_params_sharp_no_pseudomac.txt')
         with open(get_raw_params_file_path, 'r') as get_raw_params_file:
-            get_raw_params = get_raw_params_file.read()
+            raw_params = get_raw_params_file.read().encode('utf-8')
             result = payment.get_raw_params(include_pseudomac=False)
-            self.assertEqual(get_raw_params, result)
+            self.assertEqual(raw_params, result)
 
     def test_get_raw_params_ampersand_no_pseudomac(self):
         """
@@ -450,9 +451,9 @@ class PaymentTest(TestCase):
         get_raw_params_file_path = os.path.join(
             os.path.dirname(__file__), 'fixtures', 'raw_params_ampersand_no_pseudomac.txt')
         with open(get_raw_params_file_path, 'r') as get_raw_params_file:
-            get_raw_params = get_raw_params_file.read()
+            raw_params = get_raw_params_file.read().encode('utf-8')
             result = payment.get_raw_params(splitter="&", include_pseudomac=False)
-            self.assertEqual(get_raw_params, result)
+            self.assertEqual(raw_params, result)
 
     def test_get_raw_params_ampersand_no_pseudomac_no_session_id(self):
         """
@@ -467,9 +468,9 @@ class PaymentTest(TestCase):
         get_raw_params_file_path = os.path.join(
             os.path.dirname(__file__), 'fixtures', 'raw_params_sharp_no_pseudomac_no_session.txt')
         with open(get_raw_params_file_path, 'r') as get_raw_params_file:
-            get_raw_params = get_raw_params_file.read()
+            raw_params = get_raw_params_file.read().encode('utf-8')
             result = payment.get_raw_params(include_pseudomac=False)
-            self.assertEqual(get_raw_params, result)
+            self.assertEqual(raw_params, result)
 
     @mock.patch('tbk.webpay.payment.random')
     def test_transaction_id(self, random):
@@ -574,10 +575,9 @@ class PaymentTest(TestCase):
         commerce = self.payment_kwargs['commerce']
         commerce.id = '597026007976'
         commerce.webpay_key_id = '101'
-        commerce.webpay_encrypt.return_value = 'param-mock'
+        commerce.webpay_encrypt.return_value = 'tbk_param'
 
         with open(os.path.join(os.path.dirname(__file__), 'fixtures', 'payment_form.txt')) as f:
             payment_form = f.read()
 
         self.assertEqual(payment_form, payment.get_form())
-

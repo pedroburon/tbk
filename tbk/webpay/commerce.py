@@ -6,7 +6,7 @@ from Crypto.PublicKey import RSA
 from .encryption import Encryption, Decryption, DecryptionError
 
 
-__all__ = ['Commerce', 'DecryptionError']
+__all__ = ['Commerce']
 
 
 TEST_COMMERCE_KEY = """

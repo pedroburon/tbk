@@ -45,6 +45,8 @@ PAYMENT_FORM = ('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
 def get_token_from_body(body):
     TOKEN = 'TOKEN='
     ERROR = 'ERROR='
+    if isinstance(body, six.binary_type):
+        body = body.decode('utf-8')
     lines = body.strip().split('\n')
     for line in lines:
         if line.startswith(TOKEN):
@@ -210,9 +212,10 @@ class Payment(object):
 
         if include_pseudomac:
             h = hashlib.new('md5')
-            h.update(self.get_raw_params('&', False))
-            h.update(str(self.commerce.id))
-            h.update("webpay")
+            raw_params = self.get_raw_params('&', False)
+            h.update(raw_params)
+            h.update(str(self.commerce.id).encode('utf-8'))
+            h.update(b"webpay")
             mac = str(h.hexdigest())
 
             params += ["TBK_MAC=%s" % mac]
@@ -223,7 +226,7 @@ class Payment(object):
         params += ["TBK_URL_EXITO=%s" % self.success_url]
         params += ["TBK_URL_FRACASO=%s" % self.failure_url]
         params += ["TBK_TIPO_TRANSACCION=TR_NORMAL"]
-        return splitter.join(params)
+        return splitter.join(params).encode('utf-8')
 
     def get_form(self):
         return PAYMENT_FORM.format(
