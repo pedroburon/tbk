@@ -49,7 +49,7 @@ Set environment variable for Commerce and initialize.
     os.environ['TBK_COMMERCE_ID'] = "597026007976"
     os.environ['TBK_COMMERCE_KEY'] = "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAn3HzPC1ZBzCO3edUCf/XJiwj3bzJpjjTi/zBO9O+DDzZCaMp...""
 
-    from tbk.webpay.commerce import Commerce
+    from tbk.webpay import Commerce
 
     commerce = Commerce.create_commerce()
     # for development purposes you can use
@@ -68,7 +68,7 @@ Create a new payment and redirect user.
 
 ::
 
-    from tbk.webpay.payment import Payment
+    from tbk.webpay import Payment
 
     payment = Payment(
         request_ip='127.0.0.1', # customer request ip
@@ -87,7 +87,7 @@ Then to confirm payment, use an endpoint with:
 
 ::
 
-    from tbk.webpay.confirmation import Confirmation
+    from tbk.webpay import Confirmation
 
     def confirm_payment(request):
         confirmation = Confirmation(
@@ -96,16 +96,14 @@ Then to confirm payment, use an endpoint with:
             data=request.POST
         )
 
-        if confirmation.validate_order(validate):
-            return HttpResponse(commerce.acknowledge)
+        def validate_order(payload):
+            order = Order.get_order(id=payload.order_id, amount=payload.amount)
+            if order:
+              order.set_paid()
+              return True
+            return False
 
-        return HttpResponse(commerce.reject)
-
-    def validate(payload):
-        # validate payload.order_id and payload.amount
-        # do something
-        return True # if validates
-
+        return HttpResponse(confirmation.get_webpay_response())
 
 About webpay communication protocol: http://sagmor.com/rants/technical/webpay-communication-protocol/
 
