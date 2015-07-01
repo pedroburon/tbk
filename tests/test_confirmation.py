@@ -80,68 +80,6 @@ class ConfirmationTest(TestCase):
         self.assertEqual(
             ConfirmationPayload.return_value, confirmation.payload)
 
-    @mock.patch('tbk.webpay.confirmation.Confirmation.is_success')
-    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
-    def test_not_validate_order(self, parse, is_success, logger, ConfirmationPayload):
-        validate = mock.Mock()
-        validate.return_value=False
-        parse.return_value = {
-            'TBK_RESPUESTA': '0',
-        }
-        data = {
-            'TBK_PARAM': mock.Mock()
-        }
-        is_success.return_value = True
-        payload = ConfirmationPayload.return_value
-        payload.response = payload.SUCCESS_RESPONSE_CODE
-
-        confirmation = Confirmation(self.commerce, self.request_ip, data)
-
-        self.assertFalse(confirmation.validate_order(validate))
-        validate.assert_called_once_with(payload)
-        logger.error.assert_called_once_with(confirmation)
-
-    @mock.patch('tbk.webpay.confirmation.Confirmation.is_success')
-    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
-    def test_validate_order(self, parse, is_success, logger, ConfirmationPayload):
-        validate = mock.Mock()
-        validate.return_value=True
-        parse.return_value = {
-            'TBK_RESPUESTA': '0',
-        }
-        data = {
-            'TBK_PARAM': mock.Mock()
-        }
-        is_success.return_value = True
-        payload = ConfirmationPayload.return_value
-        payload.response = payload.SUCCESS_RESPONSE_CODE
-
-        confirmation = Confirmation(self.commerce, self.request_ip, data)
-
-        self.assertTrue(confirmation.validate_order(validate))
-        validate.assert_called_once_with(payload)
-        logger.confirmation.assert_called_once_with(confirmation)
-
-    @mock.patch('tbk.webpay.confirmation.Confirmation.is_success')
-    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
-    def test_validate_order_not_success(self, parse, is_success, logger, ConfirmationPayload):
-        validate = mock.Mock()
-        validate.return_value=True
-        parse.return_value = {
-            'TBK_RESPUESTA': '0',
-        }
-        data = {
-            'TBK_PARAM': mock.Mock()
-        }
-        is_success.return_value = False
-        payload = ConfirmationPayload.return_value
-        payload.response = payload.SUCCESS_RESPONSE_CODE
-
-        confirmation = Confirmation(self.commerce, self.request_ip, data)
-
-        self.assertFalse(confirmation.validate_order(validate))
-        logger.error.assert_called_once_with(confirmation)
-
     @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
     def test_is_success(self, parse, logger, ConfirmationPayload):
         parse.return_value = {
@@ -249,6 +187,66 @@ class ConfirmationTest(TestCase):
         confirmation.init_time = confirmation.init_time + datetime.timedelta(seconds=timeout)
 
         self.assertFalse(confirmation.is_timeout())
+
+    @mock.patch('tbk.webpay.confirmation.Confirmation.is_success')
+    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
+    def test_get_webpay_response_acknowledge(self, parse, is_success, logger, ConfirmationPayload):
+        parse.return_value = {
+            'TBK_RESPUESTA': '0',
+        }
+        data = {
+            'TBK_PARAM': mock.Mock()
+        }
+        payload = ConfirmationPayload.return_value
+        payload.response = payload.SUCCESS_RESPONSE_CODE
+        is_success.return_value = True
+        confirmation = Confirmation(self.commerce, self.request_ip, data)
+        validate = mock.Mock(return_value=True)
+
+        self.assertEqual(self.commerce.acknowledge,
+                         confirmation.get_webpay_response(validate))
+        validate.assert_called_once_with(payload)
+        logger.confirmation.assert_called_once_with(confirmation)
+
+    @mock.patch('tbk.webpay.confirmation.Confirmation.is_success')
+    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
+    def test_get_webpay_response_reject(self, parse, is_success, logger, ConfirmationPayload):
+        parse.return_value = {
+            'TBK_RESPUESTA': '0',
+        }
+        data = {
+            'TBK_PARAM': mock.Mock()
+        }
+        payload = ConfirmationPayload.return_value
+        payload.response = payload.SUCCESS_RESPONSE_CODE
+        is_success.return_value = True
+        confirmation = Confirmation(self.commerce, self.request_ip, data)
+        validate = mock.Mock(return_value=False)
+
+        self.assertEqual(self.commerce.reject,
+                         confirmation.get_webpay_response(validate))
+        validate.assert_called_once_with(payload)
+        logger.error.assert_called_once_with(confirmation)
+
+    @mock.patch('tbk.webpay.confirmation.Confirmation.is_success')
+    @mock.patch('tbk.webpay.confirmation.Confirmation.parse')
+    def test_get_webpay_response_no_success(self, parse, is_success, logger, ConfirmationPayload):
+        parse.return_value = {
+            'TBK_RESPUESTA': '0',
+        }
+        data = {
+            'TBK_PARAM': mock.Mock()
+        }
+        payload = ConfirmationPayload.return_value
+        payload.response = payload.SUCCESS_RESPONSE_CODE
+        is_success.return_value = False
+        confirmation = Confirmation(self.commerce, self.request_ip, data)
+        validate = mock.Mock(return_value=True)
+
+        self.assertEqual(self.commerce.acknowledge,
+                         confirmation.get_webpay_response(validate))
+        logger.confirmation.assert_called_once_with(confirmation)
+        self.assertEqual(0, validate.call_count)
 
 
 class ConfirmationPayloadTest(TestCase):

@@ -190,15 +190,7 @@ class Confirmation(object):
         else: # TBK_RESPUESTA != 0
             logger.confirmation(self)
         return self.commerce.acknowledge
-    
-    def validate_order(self, validate_func, check_timeout=True):
-        if self.is_success(check_timeout):
-            if validate_func(self.payload):
-                logger.confirmation(self)
-                return True
-        logger.error(self)
-        return False
-    
+
     
     def is_success(self, check_timeout=True):
         '''
