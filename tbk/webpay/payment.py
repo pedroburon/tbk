@@ -8,6 +8,7 @@ import requests
 from Crypto.Random import random
 
 from .commerce import Commerce, DecryptionError
+from .params import Params
 from .logging import logger
 from . import TBK_VERSION_KCC
 
@@ -19,6 +20,9 @@ USER_AGENT = "TBK/%(TBK_VERSION_KCC)s (Python/%(PYTHON_VERSION)s)" % {
     'TBK_VERSION_KCC': TBK_VERSION_KCC,
     'PYTHON_VERSION': PYTHON_VERSION
 }
+
+TBK_NORMAL_TRANSACTION = 'TR_NORMAL'
+
 
 PAYMENT_FORM = ('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">'
                 '<html><head><title>WebPay</title><meta name="GENERATOR" content="www.orangepeople.cl" />'
@@ -62,6 +66,33 @@ def clean_amount(amount):
     return decimal.Decimal(str(amount)).quantize(decimal.Decimal('.01'), rounding=decimal.ROUND_UP)
 
 
+class PaymentParams(Params):
+    fields = (
+        "TBK_ORDEN_COMPRA",
+        "TBK_CODIGO_COMERCIO",
+        "TBK_ID_TRANSACCION",
+        "TBK_URL_CGI_COMERCIO",
+        "TBK_SERVIDOR_COMERCIO",
+        "TBK_PUERTO_COMERCIO",
+        "TBK_VERSION_KCC",
+        "TBK_KEY_ID",
+        "PARAMVERIFCOM",
+        "TBK_MAC",
+        "TBK_MONTO",
+        "TBK_ID_SESION",
+        "TBK_URL_EXITO",
+        "TBK_URL_FRACASO",
+        "TBK_TIPO_TRANSACCION",
+        "TBK_MONTO_CUOTA",
+        "TBK_NUMERO_CUOTAS"
+    )
+    optionals = (
+        "TBK_ID_SESION",
+        "TBK_MONTO_CUOTA",
+        "TBK_NUMERO_CUOTAS"
+    )
+
+
 class Payment(object):
     """
     Initialize a Payment object with params required to create the redirection url.
@@ -89,7 +120,8 @@ class Payment(object):
 
     def __init__(self, request_ip, amount,
                  order_id, success_url, confirmation_url,
-                 session_id=None, failure_url=None, commerce=None,):
+                 session_id=None, failure_url=None, commerce=None,
+                 installments=0, installments_amount=None):
         self.commerce = commerce or Commerce.create_commerce()
         self.request_ip = request_ip
         self.amount = clean_amount(amount)
@@ -184,9 +216,6 @@ class Payment(object):
             raise PaymentError("Success URL required")
         if self.confirmation_url is None:
             raise PaymentError("Confirmation URL required")
-        confirmation_uri = six.moves.urllib.parse.urlparse(self.confirmation_url)
-        if re.match('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', confirmation_uri.hostname) is None:
-            raise PaymentError("Confirmation URL host MUST be an IP address")
 
     @property
     def transaction_id(self):
@@ -197,36 +226,25 @@ class Payment(object):
             self._transaction_id = random.randint(0, 10000000000 - 1)
         return self._transaction_id
 
-    def get_raw_params(self, splitter="#", include_pseudomac=True):
-        params = []
-        params += ["TBK_ORDEN_COMPRA=%s" % self.order_id]
-        params += ["TBK_CODIGO_COMERCIO=%s" % self.commerce.id]
-        params += ["TBK_ID_TRANSACCION=%s" % self.transaction_id]
+    def get_raw_params(self):
+        params = PaymentParams(commerce=self.commerce)
+        params['TBK_ORDEN_COMPRA'] = self.order_id
+        params['TBK_CODIGO_COMERCIO'] = self.commerce.id
+        params['TBK_ID_TRANSACCION'] = self.transaction_id
         uri = six.moves.urllib.parse.urlparse(self.confirmation_url)
-        params += ["TBK_URL_CGI_COMERCIO=%s" % uri.path]
-        params += ["TBK_SERVIDOR_COMERCIO=%s" % uri.hostname]
-        params += ["TBK_PUERTO_COMERCIO=%s" % uri.port]
-        params += ["TBK_VERSION_KCC=%s" % TBK_VERSION_KCC]
-        params += ["TBK_KEY_ID=%s" % self.commerce.webpay_key_id]
-        params += ["PARAMVERIFCOM=1"]
-
-        if include_pseudomac:
-            h = hashlib.new('md5')
-            raw_params = self.get_raw_params('&', False)
-            h.update(raw_params)
-            h.update(str(self.commerce.id).encode('utf-8'))
-            h.update(b"webpay")
-            mac = str(h.hexdigest())
-
-            params += ["TBK_MAC=%s" % mac]
-
-        params += ["TBK_MONTO=%d" % int(self.amount * 100)]
+        params['TBK_URL_CGI_COMERCIO'] = uri.path
+        params['TBK_SERVIDOR_COMERCIO'] = uri.hostname
+        params['TBK_PUERTO_COMERCIO'] = uri.port
+        params['TBK_VERSION_KCC'] = TBK_VERSION_KCC
+        params['TBK_KEY_ID'] = self.commerce.webpay_key_id
+        params['PARAMVERIFCOM'] = 1
+        params["TBK_MONTO"] = int(self.amount * 100)
         if self.session_id:
-            params += ["TBK_ID_SESION=%s" % self.session_id]
-        params += ["TBK_URL_EXITO=%s" % self.success_url]
-        params += ["TBK_URL_FRACASO=%s" % self.failure_url]
-        params += ["TBK_TIPO_TRANSACCION=TR_NORMAL"]
-        return splitter.join(params).encode('utf-8')
+            params["TBK_ID_SESION"] = self.session_id
+        params["TBK_URL_EXITO"] = self.success_url
+        params["TBK_URL_FRACASO"] = self.failure_url
+        params["TBK_TIPO_TRANSACCION"] = TBK_NORMAL_TRANSACTION
+        return params.get_raw()
 
     def get_form(self):
         return PAYMENT_FORM.format(

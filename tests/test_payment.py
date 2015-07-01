@@ -3,12 +3,14 @@ import os
 import sys
 from decimal import Decimal, ROUND_DOWN
 from unittest import TestCase
+from collections import OrderedDict
 
 import six
 import mock
 
-from tbk.webpay import TBK_VERSION_KCC
-from tbk.webpay.payment import Payment, PaymentError
+from tbk.webpay import TBK_VERSION_KCC, Payment, PaymentError, Commerce
+from tbk.webpay.payment import PaymentParams
+from tbk.webpay.params import Params
 from tbk.webpay.encryption import DecryptionError
 
 RESPONSE_WITH_ERROR = '''
@@ -400,78 +402,6 @@ class PaymentTest(TestCase):
             payment.params
         verify.assert_called_once_with()
 
-    @mock.patch('tbk.webpay.payment.hashlib')
-    def test_get_raw_params(self, hashlib):
-        """
-        payment.get_raw_params returns params as seen on raw_params.txt
-        """
-        h = hashlib.new.return_value
-        h.hexdigest.return_value = "8455b5720ff48c0efae649a42b6d1aa2"
-        commerce = self.payment_kwargs['commerce']
-        commerce.id = "1234567890"
-        commerce.webpay_key_id = '101'
-        payment = Payment(**self.payment_kwargs)
-        payment._transaction_id = 123456789
-        get_raw_params_file_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'raw_params.txt')
-        with open(get_raw_params_file_path, 'r') as get_raw_params_file:
-            raw_params = get_raw_params_file.read().encode('utf-8')
-
-            result = payment.get_raw_params()
-
-            h.hexdigest.assert_called_once_with()
-            h.update.assert_any_call(payment.get_raw_params('&', False))
-            h.update.assert_any_call(str(payment.commerce.id).encode('utf-8'))
-            h.update.assert_any_call(b"webpay")
-            self.assertEqual(raw_params, result)
-
-    def test_get_raw_params_sharp_no_pseudomac(self):
-        """
-        payment.get_raw_params returns params as seen on get_raw_params_sharp_no_pseudomac.txt
-        """
-        commerce = self.payment_kwargs['commerce']
-        commerce.id = "1234567890"
-        commerce.webpay_key_id = '101'
-        payment = Payment(**self.payment_kwargs)
-        payment._transaction_id = 123456789
-        get_raw_params_file_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'raw_params_sharp_no_pseudomac.txt')
-        with open(get_raw_params_file_path, 'r') as get_raw_params_file:
-            raw_params = get_raw_params_file.read().encode('utf-8')
-            result = payment.get_raw_params(include_pseudomac=False)
-            self.assertEqual(raw_params, result)
-
-    def test_get_raw_params_ampersand_no_pseudomac(self):
-        """
-        payment.get_raw_params returns params as seen on raw_params_ampersand_no_pseudomac.txt
-        """
-        commerce = self.payment_kwargs['commerce']
-        commerce.id = "1234567890"
-        commerce.webpay_key_id = '101'
-        payment = Payment(**self.payment_kwargs)
-        payment._transaction_id = 123456789
-        get_raw_params_file_path = os.path.join(
-            os.path.dirname(__file__), 'fixtures', 'raw_params_ampersand_no_pseudomac.txt')
-        with open(get_raw_params_file_path, 'r') as get_raw_params_file:
-            raw_params = get_raw_params_file.read().encode('utf-8')
-            result = payment.get_raw_params(splitter="&", include_pseudomac=False)
-            self.assertEqual(raw_params, result)
-
-    def test_get_raw_params_ampersand_no_pseudomac_no_session_id(self):
-        """
-        payment.get_raw_params returns params as seen on get_raw_params_sharp_no_pseudomac_no_session.txt
-        """
-        commerce = self.payment_kwargs['commerce']
-        commerce.id = "1234567890"
-        commerce.webpay_key_id = '101'
-        self.payment_kwargs['session_id'] = None
-        payment = Payment(**self.payment_kwargs)
-        payment._transaction_id = 123456789
-        get_raw_params_file_path = os.path.join(
-            os.path.dirname(__file__), 'fixtures', 'raw_params_sharp_no_pseudomac_no_session.txt')
-        with open(get_raw_params_file_path, 'r') as get_raw_params_file:
-            raw_params = get_raw_params_file.read().encode('utf-8')
-            result = payment.get_raw_params(include_pseudomac=False)
-            self.assertEqual(raw_params, result)
-
     @mock.patch('tbk.webpay.payment.random')
     def test_transaction_id(self, random):
         """
@@ -581,3 +511,14 @@ class PaymentTest(TestCase):
             payment_form = f.read()
 
         self.assertEqual(payment_form, payment.get_form())
+
+
+class PaymentParamsTest(TestCase):
+    def test_initialize(self):
+        commerce = mock.Mock(spec=Commerce)
+        commerce.id = Commerce.TEST_COMMERCE_ID
+
+        params = PaymentParams(commerce=commerce)
+
+        self.assertIsInstance(params, Params)
+        self.assertIsInstance(params, PaymentParams)
