@@ -167,7 +167,7 @@ class Commerce(object):
         '''
         config = (
             "IDCOMERCIO = {commerce_id}\n"
-            "MEDCOM = 2\n"
+            "MEDCOM = 1\n"
             "TBK_KEY_ID = 101\n"
             "PARAMVERIFCOM = 1\n"
             "URLCGICOM = {confirmation_path}\n"
@@ -181,12 +181,13 @@ class Commerce(object):
             "SERVERTRA = {webpay_server}\n"
             "PORTTRA = {webpay_port}\n"
             "PREFIJO_CONF_TR = HTML_\n"
-            "HTML_TR_NORMAL = http://webpay.doncupon.cl/productos/confirmation/\n"
+            "HTML_TR_NORMAL = http://127.0.0.1/notify\n"
         )
         confirmation_uri = six.moves.urllib.parse.urlparse(confirmation_url)
         webpay_server = "https://certificacion.webpay.cl" if self.testing else "https://webpay.transbank.cl"
         webpay_port = 6443 if self.testing else 443
         return config.format(commerce_id=self.id,
+                             confirmation_url=confirmation_url,
                              confirmation_path=confirmation_uri.path,
                              confirmation_host=confirmation_uri.hostname,
                              confirmation_port=confirmation_uri.port,
