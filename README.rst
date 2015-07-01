@@ -70,17 +70,18 @@ Create a new payment and redirect user.
 
     from tbk.webpay import Payment
 
-    payment = Payment(
-        request_ip='127.0.0.1', # customer request ip
-        commerce=commerce,
-        success_url='http://localhost:8080/webpay/success/',
-        confirmation_url='http://127.0.0.1/webpay/confirm/', # callback url with IP
-        failure_url='http://localhost:8080/webpay/failure/',
-        session_id='SOME_SESSION_VALUE',
-        amount=123456, # could be int, str or Decimal
-        order_id=1,
-    )
-    payment.redirect_url
+    def pay(request):
+      payment = Payment(
+          request_ip=request.remote_addr, # customer request ip
+          commerce=commerce,
+          success_url='http://example.net/success/',
+          confirmation_url='http://123.123.123.123/webpay/confirm/', # callback url with IP
+          failure_url='http://example.net/webpay/failure/',
+          session_id='SOME_SESSION_VALUE',
+          amount=123456, # could be int, str or Decimal
+          order_id="oc123",
+      )
+      return redirect(payment.redirect_url, status_code=302)
 
 
 Then to confirm payment, use an endpoint with:
@@ -92,8 +93,8 @@ Then to confirm payment, use an endpoint with:
     def confirm_payment(request):
         confirmation = Confirmation(
             commerce=commerce,
-            request_ip=request.ip_address,
-            data=request.POST
+            request_ip=request.remote_addr,
+            data=request.form
         )
 
         def validate_order(payload):
@@ -103,11 +104,19 @@ Then to confirm payment, use an endpoint with:
               return True
             return False
 
-        return HttpResponse(confirmation.get_webpay_response())
+        return HttpResponse(confirmation.get_webpay_response(validate_order))
 
 About webpay communication protocol: http://sagmor.com/rants/technical/webpay-communication-protocol/
 
 .. split here
+
+Changelog
+---------
+
+* Transbank certification achieved!
+* New confirmation method get_webpay_response 
+* Logs with real url
+* New logger error method
 
 Development
 -----------
