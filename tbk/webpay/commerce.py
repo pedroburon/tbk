@@ -159,7 +159,7 @@ class Commerce(object):
         '''
         return self.get_commerce_key().publickey().exportKey()
 
-    def get_config_tbk(self, confirmation_url):
+    def get_config_tbk(self, confirmation_url, notification_url='http://127.0.0.1/notify'):
         '''
         Returns a string with the ``TBK_CONFIG.dat``.
 
@@ -181,18 +181,18 @@ class Commerce(object):
             "SERVERTRA = {webpay_server}\n"
             "PORTTRA = {webpay_port}\n"
             "PREFIJO_CONF_TR = HTML_\n"
-            "HTML_TR_NORMAL = http://127.0.0.1/notify\n"
+            "HTML_TR_NORMAL = {notification_url}\n"
         )
         confirmation_uri = six.moves.urllib.parse.urlparse(confirmation_url)
         webpay_server = "https://certificacion.webpay.cl" if self.testing else "https://webpay.transbank.cl"
         webpay_port = 6443 if self.testing else 443
         return config.format(commerce_id=self.id,
-                             confirmation_url=confirmation_url,
                              confirmation_path=confirmation_uri.path,
                              confirmation_host=confirmation_uri.hostname,
                              confirmation_port=confirmation_uri.port,
                              webpay_port=webpay_port,
-                             webpay_server=webpay_server)
+                             webpay_server=webpay_server,
+                             notification_url=notification_url)
 
     @property
     def acknowledge(self):
