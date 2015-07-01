@@ -486,15 +486,6 @@ class PaymentTest(TestCase):
             payment.verify
         )
 
-    def test_verify_no_confirmation_ip(self):
-        payment = Payment(**self.payment_kwargs)
-        payment.confirmation_url = "http://example.org/confirmation"
-
-        six.assertRaisesRegex(self, 
-            PaymentError, "Confirmation URL host MUST be an IP address",
-            payment.verify
-        )
-
     def test_error_page(self):
         with open(os.path.join(os.path.dirname(__file__), 'fixtures', 'payment_error.txt')) as f:
             error_page = f.read()
