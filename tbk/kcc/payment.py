@@ -219,8 +219,8 @@ class Payment(object):
         confirmation_uri = six.moves.urllib.parse.urlparse(self.confirmation_url)
         if re.match('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', confirmation_uri.hostname) is None:
             raise PaymentError("Confirmation URL host MUST be an IP address")
-        if confirmation_uri not in ('http', 'https') and not confirmation_uri.port:
-            raise PaymentError("Confirmation URL schema MUST be http or https if port not specified.")
+        if confirmation_uri.scheme not in ('http', 'https') and not confirmation_uri.port:
+            raise PaymentError("Confirmation URL scheme MUST be http or https if port not specified.")
 
     @property
     def transaction_id(self):
