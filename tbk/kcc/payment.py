@@ -239,7 +239,7 @@ class Payment(object):
         uri = six.moves.urllib.parse.urlparse(self.confirmation_url)
         params['TBK_URL_CGI_COMERCIO'] = uri.path
         params['TBK_SERVIDOR_COMERCIO'] = uri.hostname
-        params['TBK_PUERTO_COMERCIO'] = uri.port or (443 if r.scheme == 'https' else 80)
+        params['TBK_PUERTO_COMERCIO'] = uri.port or (443 if uri.scheme == 'https' else 80)
         params['TBK_VERSION_KCC'] = TBK_VERSION_KCC
         params['TBK_KEY_ID'] = self.commerce.webpay_key_id
         params['PARAMVERIFCOM'] = 1
