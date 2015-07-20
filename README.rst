@@ -49,7 +49,7 @@ Set environment variable for Commerce and initialize.
     os.environ['TBK_COMMERCE_ID'] = "597026007976"
     os.environ['TBK_COMMERCE_KEY'] = "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAn3HzPC1ZBzCO3edUCf/XJiwj3bzJpjjTi/zBO9O+DDzZCaMp...""
 
-    from tbk.webpay import Commerce
+    from tbk.kcc import Commerce
 
     commerce = Commerce.create_commerce()
     # for development purposes you can use
@@ -59,8 +59,8 @@ If you want to set the official webpay log (for certification issues):
 
 ::
 
-    from tbk.webpay.logging import configure_logger
-    from tbk.webpay.logging.official import WebpayOfficialHandler
+    from tbk.kcc.logging import configure_logger
+    from tbk.kcc.logging.official import WebpayOfficialHandler
 
     configure_logger(WebpayOfficialHandler(LOG_BASE_PATH), notification_url='http://127.0.0.1/notify')
 
@@ -68,7 +68,7 @@ Create a new payment and redirect user.
 
 ::
 
-    from tbk.webpay import Payment
+    from tbk.kcc import Payment
 
     def pay(request):
       payment = Payment(
@@ -88,7 +88,7 @@ Then to confirm payment, use an endpoint with:
 
 ::
 
-    from tbk.webpay import Confirmation
+    from tbk.kcc import Confirmation
 
     def confirm_payment(request):
         confirmation = Confirmation(
