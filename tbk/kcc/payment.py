@@ -101,6 +101,7 @@ class Payment(object):
     _params = None
     _transaction_id = None
 
+    #: KCC error page for tbk_bp_pago.cgi
     ERROR_PAGE = ('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"><html>'
                   '<head><title>WebPay</title><meta name="GENERATOR" content="www.orangepeople.cl" />'
                   '<meta name="AUTHOR" content="Orange People Software LTDA" />'
@@ -225,7 +226,7 @@ class Payment(object):
     @property
     def transaction_id(self):
         """
-        Transaction ID for Transbank, a secure random int between 0 and 999999999.
+        Transaction ID for Transbank, a secure random int between 0 and 999999999. One per instance.
         """
         if not self._transaction_id:
             self._transaction_id = random.randint(0, 10000000000 - 1)
@@ -252,6 +253,9 @@ class Payment(object):
         return params.get_raw()
 
     def get_form(self):
+        """
+        Return KCC response for a html redirection.
+        """
         return PAYMENT_FORM.format(
             process_url=self.get_process_url(),
             TBK_PARAM=self.params,

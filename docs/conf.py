@@ -248,8 +248,8 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'tbk', u'tbk Documentation',
-   u'Pedro Buron', 'tbk', 'One line description of project.',
-   'Miscellaneous'),
+   u'Pedro Buron', 'tbk', 'Python implementation of Transbank\'s Webpay protocol.',
+   'Payments'),
 ]
 
 # Documents to append as an appendix to all manuals.

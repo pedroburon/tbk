@@ -6,9 +6,11 @@ Python implementation of Transbank's Webpay protocol. `tbk` replaces **Webpay KC
 Installation
 ------------
 
-Install tbk by running::
+::
 
-    $ pip install tbk
+    pip install tbk
+
+
 
 Quick Start
 -----------
@@ -18,9 +20,9 @@ Set environment variable for Commerce and initialize.
 ::
 
     os.environ['TBK_COMMERCE_ID'] = "597026007976"
-    os.environ['TBK_COMMERCE_KEY'] = "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAn3HzPC..."
+    os.environ['TBK_COMMERCE_KEY'] = "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAn3HzPC1ZBzCO3edUCf/XJiwj3bzJpjjTi/zBO9O+DDzZCaMp...""
 
-    from tbk.webpay.commerce import Commerce
+    from tbk.kcc import Commerce
 
     commerce = Commerce.create_commerce()
     # for development purposes you can use
@@ -30,49 +32,52 @@ If you want to set the official webpay log (for certification issues):
 
 ::
 
-    from tbk.webpay.logging import configure_logger
-    from tbk.webpay.logging.official import WebpayOfficialHandler
+    from tbk.kcc.logging import configure_logger
+    from tbk.kcc.logging.official import WebpayOfficialHandler
 
-    configure_logger(WebpayOfficialHandler(LOG_BASE_PATH))
-    # Others Handlers must implement `tbk.webpay.logging.BaseHandler`
+    configure_logger(WebpayOfficialHandler(LOG_BASE_PATH), notification_url='http://127.0.0.1/notify')
 
 Create a new payment and redirect user.
 
 ::
 
-    from tbk.webpay.payment import Payment
+    from tbk.kcc import Payment
 
-    payment = Payment(
-        request_ip=CUSTOMER_REQUEST_IP,
-        commerce=commerce,
-        success_url='http://localhost:8080/webpay/success/',
-        confirmation_url='http://123.123.123.123:8080/webpay/confirmation/',
-        failure_url='http://localhost:8080/webpay/failure/',
-        session_id='SOME_SESSION_VALUE',
-        amount=123456,
-        order_id=1,
-    )
-    payment.redirect_url
+    def pay(request):
+      payment = Payment(
+          request_ip=request.remote_addr, # customer request ip
+          commerce=commerce,
+          success_url='http://example.net/success/',
+          confirmation_url='http://123.123.123.123/webpay/confirm/', # callback url with IP
+          failure_url='http://example.net/webpay/failure/',
+          session_id='SOME_SESSION_VALUE',
+          amount=123456, # could be int, str or Decimal
+          order_id="oc123",
+      )
+      return redirect(payment.redirect_url, status_code=302)
 
 
-Then to confirm payment, use an endpoint on confirmation_url` with:
+Then to confirm payment, use an endpoint with:
 
 ::
 
-    from tbk.webpay.confirmation import Confirmation
+    from tbk.kcc import Confirmation
 
     def confirm_payment(request):
         confirmation = Confirmation(
             commerce=commerce,
-            request_ip=request.ip_address,
-            data=request.POST
+            request_ip=request.remote_addr,
+            data=request.form
         )
 
-        # validate_confirmation validate if order_id and amount are valid.
-        if confirmation.is_success() and validate_confirmation(confirmation.order_id, confirmation.amount):
-            return HttpResponse(commerce.acknowledge)
+        def validate_order(payload):
+            order = Order.get_order(id=payload.order_id, amount=payload.amount)
+            if order:
+              order.set_paid()
+              return True
+            return False
 
-        return HttpResponse(commerce.reject)
+        return HttpResponse(confirmation.get_webpay_response(validate_order))
 
 
 Index
