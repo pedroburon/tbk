@@ -37,7 +37,8 @@ class Params(collections.OrderedDict):
         hash.update(b'webpay')
         return hash.hexdigest()
 
-    def get_pairs(self, exclude=[]):
+    def get_pairs(self, exclude=None):
+        exclude = exclude or []
         pairs = []
         keys = self.fields or self.keys()
         for key in keys:

@@ -182,11 +182,11 @@ class Confirmation(object):
     
     def get_webpay_response(self, validate_func, check_timeout=True):
         if self.is_success(check_timeout): # TBK_RESPUESTA == 0
-          if validate_func(self.payload):
-            logger.confirmation(self)
-          else:
-            logger.error(self)
-            return self.commerce.reject
+            if validate_func(self.payload):
+                logger.confirmation(self)
+            else:
+                logger.error(self)
+                return self.commerce.reject
         else: # TBK_RESPUESTA != 0
             logger.confirmation(self)
         return self.commerce.acknowledge
