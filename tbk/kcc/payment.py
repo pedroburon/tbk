@@ -38,7 +38,7 @@ PAYMENT_FORM = ('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
                 '<div id="espaciar"><div id="err_div" style="visibility:hidden;">'
                 '<h1>ERROR: No se ha podido establecer la conexi&oacute;n</h1>'
                 '<a href="javascript:history.go(-2)">Volver al comercio</a></div></div></div></div>'
-                '<form name="f" method="POST" action="https://certificacion.webpay.cl:6443/filtroUnificado/bp_revision.cgi">\n'
+                '<form name="f" method="POST" action="{process_url}">\n'
                 '<input type="hidden" name="TBK_PARAM" value="{TBK_PARAM}">\n'
                 '<input type="hidden" name="TBK_VERSION_KCC" value="{TBK_VERSION_KCC}">\n'
                 '<input type="hidden" name="TBK_CODIGO_COMERCIO" value="{TBK_CODIGO_COMERCIO}">\n'
@@ -253,6 +253,7 @@ class Payment(object):
 
     def get_form(self):
         return PAYMENT_FORM.format(
+            process_url=self.get_process_url(),
             TBK_PARAM=self.params,
             TBK_VERSION_KCC=TBK_VERSION_KCC,
             TBK_CODIGO_COMERCIO=self.commerce.id,

@@ -496,6 +496,7 @@ class PaymentTest(TestCase):
         commerce = self.payment_kwargs['commerce']
         commerce.id = '597026007976'
         commerce.webpay_key_id = '101'
+        commerce.testing = True
         commerce.webpay_encrypt.return_value = 'tbk_param'
 
         with open(os.path.join(os.path.dirname(__file__), 'fixtures', 'payment_form.txt')) as f:
@@ -503,6 +504,18 @@ class PaymentTest(TestCase):
 
         self.assertEqual(payment_form, payment.get_form())
 
+    def test_get_form_prod(self):
+        payment = Payment(**self.payment_kwargs)
+        commerce = self.payment_kwargs['commerce']
+        commerce.id = '597026007976'
+        commerce.webpay_key_id = '101'
+        commerce.testing = False
+        commerce.webpay_encrypt.return_value = 'tbk_param'
+
+        with open(os.path.join(os.path.dirname(__file__), 'fixtures', 'payment_form_prod.txt')) as f:
+            payment_form = f.read()
+
+        self.assertEqual(payment_form, payment.get_form())
 
 class PaymentParamsTest(TestCase):
     def test_initialize(self):
