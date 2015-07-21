@@ -1,8 +1,8 @@
 from unittest import TestCase
 from collections import OrderedDict
 
-from tbk.webpay import Commerce
-from tbk.webpay.params import Params
+from tbk.kcc import Commerce
+from tbk.kcc.params import Params
 
 import mock
 import hashlib

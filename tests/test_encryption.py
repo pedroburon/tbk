@@ -11,7 +11,7 @@ from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.Signature import PKCS1_v1_5
 from Crypto import Random
 
-from tbk.webpay.encryption import Encryption, Decryption, InvalidMessageException, DecryptionError, EncryptionError
+from tbk.kcc.encryption import Encryption, Decryption, InvalidMessageException, DecryptionError, EncryptionError
 
 WEBPAY_KEY = RSA.generate(4096)
 WEBPAY_KEY_PUBLIC = WEBPAY_KEY.publickey()
@@ -48,11 +48,11 @@ class EncryptionTest(TestCase):
         six.assertRaisesRegex(self, EncryptionError, "Message must be binary.",
                                 encryption.encrypt, message)
 
-    @mock.patch('tbk.webpay.encryption.Encryption.get_iv')
-    @mock.patch('tbk.webpay.encryption.Encryption.get_key')
-    @mock.patch('tbk.webpay.encryption.Encryption.encrypt_key')
-    @mock.patch('tbk.webpay.encryption.Encryption.encrypt_message')
-    @mock.patch('tbk.webpay.encryption.Encryption.sign_message')
+    @mock.patch('tbk.kcc.encryption.Encryption.get_iv')
+    @mock.patch('tbk.kcc.encryption.Encryption.get_key')
+    @mock.patch('tbk.kcc.encryption.Encryption.encrypt_key')
+    @mock.patch('tbk.kcc.encryption.Encryption.encrypt_message')
+    @mock.patch('tbk.kcc.encryption.Encryption.sign_message')
     def test_encrypt(self, sign_message, encrypt_message, encrypt_key, get_key, get_iv):
         message = Random.new().read(2000)
         encryption = Encryption(self.sender_key, self.recipient_key)
@@ -77,7 +77,7 @@ class EncryptionTest(TestCase):
         )
         sign_message.assert_called_once_with(message)
 
-    @mock.patch('tbk.webpay.encryption.Random')
+    @mock.patch('tbk.kcc.encryption.Random')
     def test_get_iv(self, Random):
         expected = Random.new.return_value.read.return_value
         encryption = Encryption(self.sender_key, self.recipient_key)
@@ -85,7 +85,7 @@ class EncryptionTest(TestCase):
         self.assertEqual(encryption.get_iv(), expected)
         Random.new.return_value.read.assert_called_once_with(16)
 
-    @mock.patch('tbk.webpay.encryption.Random')
+    @mock.patch('tbk.kcc.encryption.Random')
     def test_get_key(self, Random):
         expected = Random.new.return_value.read.return_value
         encryption = Encryption(self.sender_key, self.recipient_key)
@@ -145,13 +145,13 @@ class DecryptionTest(TestCase):
         self.assertEqual(self.sender_key, decryption.sender_key)
         self.assertEqual(self.recipient_key, decryption.recipient_key)
 
-    @mock.patch('tbk.webpay.encryption.binascii.hexlify')
-    @mock.patch('tbk.webpay.encryption.Decryption.get_iv')
-    @mock.patch('tbk.webpay.encryption.Decryption.get_key')
-    @mock.patch('tbk.webpay.encryption.Decryption.get_decrypted_message')
-    @mock.patch('tbk.webpay.encryption.Decryption.get_signature')
-    @mock.patch('tbk.webpay.encryption.Decryption.get_message')
-    @mock.patch('tbk.webpay.encryption.Decryption.verify')
+    @mock.patch('tbk.kcc.encryption.binascii.hexlify')
+    @mock.patch('tbk.kcc.encryption.Decryption.get_iv')
+    @mock.patch('tbk.kcc.encryption.Decryption.get_key')
+    @mock.patch('tbk.kcc.encryption.Decryption.get_decrypted_message')
+    @mock.patch('tbk.kcc.encryption.Decryption.get_signature')
+    @mock.patch('tbk.kcc.encryption.Decryption.get_message')
+    @mock.patch('tbk.kcc.encryption.Decryption.verify')
     def test_decrypt(self, verify, get_message, get_signature, get_decrypted_message, get_key, get_iv, hexlify):
         decryption = Decryption(self.recipient_key, self.sender_key)
         raw = Random.new().read(2000)
@@ -183,12 +183,12 @@ class DecryptionTest(TestCase):
         six.assertRaisesRegex(self, DecryptionError, "Message must be binary.",
                                 decryption.decrypt, message)
 
-    @mock.patch('tbk.webpay.encryption.Decryption.get_iv')
-    @mock.patch('tbk.webpay.encryption.Decryption.get_key')
-    @mock.patch('tbk.webpay.encryption.Decryption.get_decrypted_message')
-    @mock.patch('tbk.webpay.encryption.Decryption.get_signature')
-    @mock.patch('tbk.webpay.encryption.Decryption.get_message')
-    @mock.patch('tbk.webpay.encryption.Decryption.verify')
+    @mock.patch('tbk.kcc.encryption.Decryption.get_iv')
+    @mock.patch('tbk.kcc.encryption.Decryption.get_key')
+    @mock.patch('tbk.kcc.encryption.Decryption.get_decrypted_message')
+    @mock.patch('tbk.kcc.encryption.Decryption.get_signature')
+    @mock.patch('tbk.kcc.encryption.Decryption.get_message')
+    @mock.patch('tbk.kcc.encryption.Decryption.verify')
     def test_decrypt_invalid(self, verify, get_message, get_signature, get_decrypted_message, get_key, get_iv):
         decryption = Decryption(self.recipient_key, self.sender_key)
         raw = Random.new().read(2000)
@@ -198,12 +198,12 @@ class DecryptionTest(TestCase):
         six.assertRaisesRegex(self, InvalidMessageException, "Invalid message signature",
                                 decryption.decrypt, encrypted)
 
-    @mock.patch('tbk.webpay.encryption.Decryption.get_iv')
-    @mock.patch('tbk.webpay.encryption.Decryption.get_key')
-    @mock.patch('tbk.webpay.encryption.Decryption.get_decrypted_message')
-    @mock.patch('tbk.webpay.encryption.Decryption.get_signature')
-    @mock.patch('tbk.webpay.encryption.Decryption.get_message')
-    @mock.patch('tbk.webpay.encryption.Decryption.verify')
+    @mock.patch('tbk.kcc.encryption.Decryption.get_iv')
+    @mock.patch('tbk.kcc.encryption.Decryption.get_key')
+    @mock.patch('tbk.kcc.encryption.Decryption.get_decrypted_message')
+    @mock.patch('tbk.kcc.encryption.Decryption.get_signature')
+    @mock.patch('tbk.kcc.encryption.Decryption.get_message')
+    @mock.patch('tbk.kcc.encryption.Decryption.verify')
     def test_decrypt_incorrect_length(self, verify, get_message, get_signature, get_decrypted_message, get_key, get_iv):
         decryption = Decryption(self.recipient_key, self.sender_key)
         get_key.side_effect = DecryptionError("Incorrect message length.")

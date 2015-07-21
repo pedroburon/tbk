@@ -8,10 +8,10 @@ from collections import OrderedDict
 import six
 import mock
 
-from tbk.webpay import TBK_VERSION_KCC, Payment, PaymentError, Commerce
-from tbk.webpay.payment import PaymentParams
-from tbk.webpay.params import Params
-from tbk.webpay.encryption import DecryptionError
+from tbk.kcc import TBK_VERSION_KCC, Payment, PaymentError, Commerce
+from tbk.kcc.payment import PaymentParams
+from tbk.kcc.params import Params
+from tbk.kcc.encryption import DecryptionError
 
 RESPONSE_WITH_ERROR = '''
 <HTML>
@@ -54,7 +54,7 @@ class PaymentTest(TestCase):
         self.assertEqual(
             payment.failure_url, self.payment_kwargs['failure_url'])
 
-    @mock.patch('tbk.webpay.payment.Commerce.create_commerce')
+    @mock.patch('tbk.kcc.payment.Commerce.create_commerce')
     def test_initialize_without_commerce(self, create_commerce):
         """
         Create Payment and it uses default commerce from create_commerce
@@ -101,8 +101,8 @@ class PaymentTest(TestCase):
 
         self.assertEqual(Decimal("1234.57"), payment.amount)
 
-    @mock.patch('tbk.webpay.payment.Payment.get_process_url')
-    @mock.patch('tbk.webpay.payment.Payment.token')
+    @mock.patch('tbk.kcc.payment.Payment.get_process_url')
+    @mock.patch('tbk.kcc.payment.Payment.token')
     def test_redirect_url(self, token, process_url):
         """
         payment.redirect_url must return the url to redirect using process_url and token methods.
@@ -145,8 +145,8 @@ class PaymentTest(TestCase):
             payment.get_process_url()
         )
 
-    @mock.patch('tbk.webpay.payment.Payment.fetch_token')
-    @mock.patch('tbk.webpay.payment.logger')
+    @mock.patch('tbk.kcc.payment.Payment.fetch_token')
+    @mock.patch('tbk.kcc.payment.logger')
     def test_token_not_created(self, logger, fetch_token):
         """
         payment.token must return a token from fetch_token and log
@@ -159,8 +159,8 @@ class PaymentTest(TestCase):
         )
         logger.payment.assert_called_once_with(payment)
 
-    @mock.patch('tbk.webpay.payment.Payment.fetch_token')
-    @mock.patch('tbk.webpay.payment.logger')
+    @mock.patch('tbk.kcc.payment.Payment.fetch_token')
+    @mock.patch('tbk.kcc.payment.logger')
     def test_token_created(self, logger, fetch_token):
         """
         payment.token must return a token already fetched by fetch_token and dont log
@@ -178,9 +178,9 @@ class PaymentTest(TestCase):
         self.assertFalse(fetch_token.called)
         self.assertFalse(logger.payment.called)
 
-    @mock.patch('tbk.webpay.payment.requests')
-    @mock.patch('tbk.webpay.payment.Payment.get_validation_url')
-    @mock.patch('tbk.webpay.payment.Payment.params')
+    @mock.patch('tbk.kcc.payment.requests')
+    @mock.patch('tbk.kcc.payment.Payment.get_validation_url')
+    @mock.patch('tbk.kcc.payment.Payment.params')
     def test_fetch_token(self, params, get_validation_url, requests):
         """
         payment.fetch_token must post data to get_validation_url and get token from response
@@ -218,9 +218,9 @@ class PaymentTest(TestCase):
 
         self.assertEqual(token, 'e975ffc4f0605ddf3afc299eee6aeffb59efba24769548acf58e34a89ae4e228')
 
-    @mock.patch('tbk.webpay.payment.requests')
-    @mock.patch('tbk.webpay.payment.Payment.get_validation_url')
-    @mock.patch('tbk.webpay.payment.Payment.params')
+    @mock.patch('tbk.kcc.payment.requests')
+    @mock.patch('tbk.kcc.payment.Payment.get_validation_url')
+    @mock.patch('tbk.kcc.payment.Payment.params')
     def test_fetch_token_with_redirect(self, params, get_validation_url, requests):
         """
         payment.fetch_token must post data to get_validation_url and get token from response after redirect.
@@ -244,9 +244,9 @@ class PaymentTest(TestCase):
 
         self.assertEqual(token, 'e975ffc4f0605ddf3afc299eee6aeffb59efba24769548acf58e34a89ae4e228')
 
-    @mock.patch('tbk.webpay.payment.requests')
-    @mock.patch('tbk.webpay.payment.Payment.get_validation_url')
-    @mock.patch('tbk.webpay.payment.Payment.params')
+    @mock.patch('tbk.kcc.payment.requests')
+    @mock.patch('tbk.kcc.payment.Payment.get_validation_url')
+    @mock.patch('tbk.kcc.payment.Payment.params')
     def test_fetch_token_not_ok(self, params, get_validation_url, requests):
         """
         payment.fetch_token must post data to get_validation_url and fail when status_code is not 200
@@ -261,9 +261,9 @@ class PaymentTest(TestCase):
             payment.fetch_token
         )
 
-    @mock.patch('tbk.webpay.payment.requests')
-    @mock.patch('tbk.webpay.payment.Payment.get_validation_url')
-    @mock.patch('tbk.webpay.payment.Payment.params')
+    @mock.patch('tbk.kcc.payment.requests')
+    @mock.patch('tbk.kcc.payment.Payment.get_validation_url')
+    @mock.patch('tbk.kcc.payment.Payment.params')
     def test_fetch_token_with_error(self, params, get_validation_url, requests):
         """
         payment.fetch_token must post data to get_validation_url and fail with ERROR code
@@ -282,9 +282,9 @@ class PaymentTest(TestCase):
             payment.fetch_token
         )
 
-    @mock.patch('tbk.webpay.payment.requests')
-    @mock.patch('tbk.webpay.payment.Payment.get_validation_url')
-    @mock.patch('tbk.webpay.payment.Payment.params')
+    @mock.patch('tbk.kcc.payment.requests')
+    @mock.patch('tbk.kcc.payment.Payment.get_validation_url')
+    @mock.patch('tbk.kcc.payment.Payment.params')
     def test_fetch_token_with_unapproved_key(self, params, get_validation_url, requests):
         """
         payment.fetch_token must post data to get_validation_url and fail when cannot decrypt with ERROR code
@@ -302,10 +302,10 @@ class PaymentTest(TestCase):
             payment.fetch_token
         )
 
-    @mock.patch('tbk.webpay.payment.get_token_from_body')
-    @mock.patch('tbk.webpay.payment.requests')
-    @mock.patch('tbk.webpay.payment.Payment.get_validation_url')
-    @mock.patch('tbk.webpay.payment.Payment.params')
+    @mock.patch('tbk.kcc.payment.get_token_from_body')
+    @mock.patch('tbk.kcc.payment.requests')
+    @mock.patch('tbk.kcc.payment.Payment.get_validation_url')
+    @mock.patch('tbk.kcc.payment.Payment.params')
     def test_fetch_token_with_suspicios_message(self, params, get_validation_url, requests, get_token_from_body):
         """
         payment.fetch_token must post data to get_validation_url and fail when cannot decrypt with ERROR code
@@ -354,8 +354,8 @@ class PaymentTest(TestCase):
             payment.get_validation_url()
         )
 
-    @mock.patch('tbk.webpay.payment.Payment.get_raw_params')
-    @mock.patch('tbk.webpay.payment.Payment.verify')
+    @mock.patch('tbk.kcc.payment.Payment.get_raw_params')
+    @mock.patch('tbk.kcc.payment.Payment.verify')
     def test_params_not_created(self, verify, get_raw_params):
         """
         payment.params must verify and returns encrypted get_raw_params
@@ -370,8 +370,8 @@ class PaymentTest(TestCase):
         self.assertEqual(result, commerce.webpay_encrypt.return_value)
         get_raw_params.assert_called_once_with()
 
-    @mock.patch('tbk.webpay.payment.Payment.get_raw_params')
-    @mock.patch('tbk.webpay.payment.Payment.verify')
+    @mock.patch('tbk.kcc.payment.Payment.get_raw_params')
+    @mock.patch('tbk.kcc.payment.Payment.verify')
     def test_params_created(self, verify, get_raw_params):
         """
         payment.params must returns the already verified and encrypted get_raw_params
@@ -389,8 +389,8 @@ class PaymentTest(TestCase):
         self.assertFalse(commerce.webpay_encrypt.called)
         self.assertFalse(get_raw_params.called)
 
-    @mock.patch('tbk.webpay.payment.Payment.get_raw_params')
-    @mock.patch('tbk.webpay.payment.Payment.verify')
+    @mock.patch('tbk.kcc.payment.Payment.get_raw_params')
+    @mock.patch('tbk.kcc.payment.Payment.verify')
     def test_params_doesnt_verify(self, verify, get_raw_params):
         """
         payment.params must fail with PaymentError when verify fail
@@ -402,7 +402,7 @@ class PaymentTest(TestCase):
             payment.params
         verify.assert_called_once_with()
 
-    @mock.patch('tbk.webpay.payment.random')
+    @mock.patch('tbk.kcc.payment.random')
     def test_transaction_id(self, random):
         """
         payment.get_transaction_id returns a random int between 0 and 10000000000

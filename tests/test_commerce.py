@@ -5,7 +5,7 @@ import six
 import mock
 from Crypto.PublicKey import RSA
 
-from tbk.webpay.commerce import Commerce
+from tbk.kcc.commerce import Commerce
 
 
 class CommerceTest(TestCase):
@@ -57,7 +57,7 @@ class CommerceTest(TestCase):
         commerce = Commerce(id="12345", key=Commerce.TEST_COMMERCE_KEY)
         self.assertFalse(commerce.testing)
 
-    @mock.patch('tbk.webpay.commerce.os.environ', {
+    @mock.patch('tbk.kcc.commerce.os.environ', {
         'TBK_COMMERCE_ID': '54321',
         'TBK_COMMERCE_TESTING': 'True'
     })
@@ -70,7 +70,7 @@ class CommerceTest(TestCase):
         self.assertTrue(commerce.testing)
         self.assertEqual(commerce.key, commerce.TEST_COMMERCE_KEY)
 
-    @mock.patch.dict('tbk.webpay.commerce.os.environ', {
+    @mock.patch.dict('tbk.kcc.commerce.os.environ', {
         'TBK_COMMERCE_TESTING': 'True'
     })
     def test_create_commerce_with_no_commerce_id(self):
@@ -82,7 +82,7 @@ class CommerceTest(TestCase):
         self.assertTrue(commerce.testing)
         self.assertEqual(commerce.key, commerce.TEST_COMMERCE_KEY)
 
-    @mock.patch.dict('tbk.webpay.commerce.os.environ', {})
+    @mock.patch.dict('tbk.kcc.commerce.os.environ', {})
     def test_create_commerce_with_no_commerce_id_and_no_testing(self):
         """
         create_commerce create a commerce with environ TBK_COMMERCE_TESTING=False
@@ -90,7 +90,7 @@ class CommerceTest(TestCase):
         six.assertRaisesRegex(self, ValueError, "create_commerce needs TBK_COMMERCE_ID environment variable",
                                 Commerce.create_commerce)
 
-    @mock.patch.dict('tbk.webpay.commerce.os.environ', {
+    @mock.patch.dict('tbk.kcc.commerce.os.environ', {
         'TBK_COMMERCE_ID': '1234',
         'TBK_COMMERCE_TESTING': 'False'
     })
@@ -101,9 +101,9 @@ class CommerceTest(TestCase):
         six.assertRaisesRegex(self, ValueError, "create_commerce needs TBK_COMMERCE_KEY environment variable",
                                 Commerce.create_commerce)
 
-    @mock.patch('tbk.webpay.commerce.Commerce.get_commerce_key')
-    @mock.patch('tbk.webpay.commerce.Commerce.get_webpay_key')
-    @mock.patch('tbk.webpay.commerce.Encryption')
+    @mock.patch('tbk.kcc.commerce.Commerce.get_commerce_key')
+    @mock.patch('tbk.kcc.commerce.Commerce.get_webpay_key')
+    @mock.patch('tbk.kcc.commerce.Encryption')
     def test_webpay_encrypt(self, Encryption, get_webpay_key, get_commerce_key):
         commerce = Commerce(id="12345", testing=True)
         message = "decrypted"
@@ -118,9 +118,9 @@ class CommerceTest(TestCase):
         get_commerce_key.assert_called_once_with()
         self.assertEqual(result, encryption.encrypt.return_value)
 
-    @mock.patch('tbk.webpay.commerce.Commerce.get_commerce_key')
-    @mock.patch('tbk.webpay.commerce.Commerce.get_webpay_key')
-    @mock.patch('tbk.webpay.commerce.Encryption')
+    @mock.patch('tbk.kcc.commerce.Commerce.get_commerce_key')
+    @mock.patch('tbk.kcc.commerce.Commerce.get_webpay_key')
+    @mock.patch('tbk.kcc.commerce.Encryption')
     def test_webpay_encrypt_binary(self, Encryption, get_webpay_key, get_commerce_key):
         commerce = Commerce(id="12345", testing=True)
         message = b"decrypted"
@@ -135,9 +135,9 @@ class CommerceTest(TestCase):
         get_commerce_key.assert_called_once_with()
         self.assertEqual(result, encryption.encrypt.return_value)
 
-    @mock.patch('tbk.webpay.commerce.Commerce.get_commerce_key')
-    @mock.patch('tbk.webpay.commerce.Commerce.get_webpay_key')
-    @mock.patch('tbk.webpay.commerce.Decryption')
+    @mock.patch('tbk.kcc.commerce.Commerce.get_commerce_key')
+    @mock.patch('tbk.kcc.commerce.Commerce.get_webpay_key')
+    @mock.patch('tbk.kcc.commerce.Decryption')
     def test_webpay_decrypt(self, Decryption, get_webpay_key, get_commerce_key):
         commerce = Commerce(id=12345, testing=True)
         message = "encrypted"
@@ -152,9 +152,9 @@ class CommerceTest(TestCase):
         get_commerce_key.assert_called_once_with()
         self.assertEqual(result, decryption.decrypt.return_value)
 
-    @mock.patch('tbk.webpay.commerce.Commerce.get_commerce_key')
-    @mock.patch('tbk.webpay.commerce.Commerce.get_webpay_key')
-    @mock.patch('tbk.webpay.commerce.Decryption')
+    @mock.patch('tbk.kcc.commerce.Commerce.get_commerce_key')
+    @mock.patch('tbk.kcc.commerce.Commerce.get_webpay_key')
+    @mock.patch('tbk.kcc.commerce.Decryption')
     def test_webpay_decrypt_binary(self, Decryption, get_webpay_key, get_commerce_key):
         commerce = Commerce(id=12345, testing=True)
         message = b"encrypted"
@@ -227,14 +227,14 @@ class CommerceTest(TestCase):
         self.assertEqual(expected,
                          commerce.get_config_tbk(confirmation_url="http://54.198.45.70:80/prodwebpay/result"))
 
-    @mock.patch('tbk.webpay.commerce.Commerce.webpay_encrypt')
+    @mock.patch('tbk.kcc.commerce.Commerce.webpay_encrypt')
     def test_acknowledge(self, webpay_encrypt):
         commerce = Commerce(id="597026007977", key=Commerce.TEST_COMMERCE_KEY, testing=False)
 
         self.assertEqual(webpay_encrypt.return_value, commerce.acknowledge)
         webpay_encrypt.assert_called_once_with('ACK')
 
-    @mock.patch('tbk.webpay.commerce.Commerce.webpay_encrypt')
+    @mock.patch('tbk.kcc.commerce.Commerce.webpay_encrypt')
     def test_reject(self, webpay_encrypt):
         commerce = Commerce(id="597026007977", key=Commerce.TEST_COMMERCE_KEY, testing=False)
 
