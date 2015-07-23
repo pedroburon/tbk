@@ -1,8 +1,6 @@
 tbk - Transbank's Webpay protocol
 =================================
 
-**Attention: Beta not ready for production**
-
 Python implementation of Transbank's Webpay protocol.
 
 
