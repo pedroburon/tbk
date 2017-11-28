@@ -9,10 +9,10 @@ Python implementation of Transbank's Webpay protocol.
 |Latest Version| |Development Status| |Build Status| |Coverage Status| |Code Health| |Downloads| |Documentation|
 
 
-.. |Latest Version| image:: https://pypip.in/version/tbk/badge.svg?
+.. |Latest Version| image:: https://img.shields.io/pypi/v/tbk.svg?
     :target: https://pypi.python.org/pypi/tbk/
     :alt: Latest Version
-.. |Development Status| image:: https://pypip.in/status/tbk/badge.svg?
+.. |Development Status| image:: https://img.shields.io/pypi/status/tbk.svg?
    :target: https://pypi.python.org/pypi/tbk/
    :alt: Development Status
 .. |Build Status| image:: https://travis-ci.org/pedroburon/tbk.svg?
@@ -24,7 +24,7 @@ Python implementation of Transbank's Webpay protocol.
 .. |Code Health| image:: https://landscape.io/github/pedroburon/tbk/master/landscape.svg?
    :target: https://landscape.io/github/pedroburon/tbk/master
    :alt: Code Health
-.. |Downloads| image:: https://pypip.in/download/tbk/badge.svg?period=month
+.. |Downloads| image:: https://img.shields.io/pypi/dm/tbk.svg
    :target: https://pypi.python.org/pypi/tbk/
    :alt: Downloads
 .. |Documentation| image:: https://readthedocs.org/projects/tbk/badge/?version=latest
